@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+  font-family: theme("fontFamily.sans");
+}
+
+body {
+  background-color: #0c0b27; /* Warna dasar */
+  color: white; /* Warna teks default */
+}
