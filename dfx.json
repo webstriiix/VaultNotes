@@ -1,0 +1,27 @@
+{
+  "canisters": {
+    "encrypted-notes-backend": {
+      "candid": "src/encrypted-notes-backend/encrypted-notes-backend.did",
+      "package": "encrypted-notes-backend",
+      "type": "rust"
+    },
+    "encrypted-notes-frontend": {
+      "dependencies": [
+        "encrypted-notes-backend"
+      ],
+      "source": [
+        "src/encrypted-notes-frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "encrypted-notes-frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

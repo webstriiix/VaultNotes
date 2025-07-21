@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "src/encrypted-notes-backend"
+]
+resolver = "2"
