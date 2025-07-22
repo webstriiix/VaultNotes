@@ -1,8 +1,20 @@
+import Footer from "../components/commons/Footer";
+import Navbar from "../components/commons/Navbar";
+import BenefitsSection from "../components/sections/BenefitsSection/BenefitsSection";
+import CallToActionSection from "../components/sections/CallToAction";
+import FeaturesSection from "../components/sections/FeaturesSection/FeaturesSection";
+import HeroSection from "../components/sections/HeroSection";
+
 const Home = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 to-pink-500 text-white flex items-center justify-center">
-      <h1 className="text-4xl font-bold">Tailwind + Vite is working! ⚡</h1>
-    </div>
+    <>
+      <Navbar />
+      <HeroSection />
+      <FeaturesSection />
+      <BenefitsSection />
+      <CallToActionSection />
+      <Footer />
+    </>
   );
 };
 
