@@ -8,7 +8,7 @@ export default function Sidebar({ sidebarItems, isOpen }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    navigate("/login");
+    navigate("/");
   };
 
   return (
@@ -37,9 +37,10 @@ export default function Sidebar({ sidebarItems, isOpen }) {
           {(item) => (
             <ListboxItem
               key={item.key}
-              className={cn("my-1 h-12 text-lg", {
-                "bg-[#1f2937] text-white rounded-md":
-                  location.pathname.startsWith(item.href),
+              className={cn("my-1 h-12 text-lg hover:bg-[#1f2937] rounded-md", {
+                "bg-[#1f2937] text-white": location.pathname.startsWith(
+                  item.href
+                ),
               })}
               startContent={item.icon}
               textValue={item.label}
