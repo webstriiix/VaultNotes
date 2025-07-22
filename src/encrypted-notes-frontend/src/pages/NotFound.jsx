@@ -1,15 +1,23 @@
+import { useNavigate } from "react-router-dom";
+
 export default function NotFound() {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0D1117] text-white">
+    <div className="min-h-screen flex items-center justify-center bg-[#0D1117] px-4">
       <div className="text-center">
-        <h1 className="text-6xl font-bold mb-4">404</h1>
-        <p className="text-2xl mb-4">Page Not Found</p>
-        <a
-          href="/dashboard"
-          className="text-blue-400 hover:underline text-lg"
+        <h1 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#FB928E] to-[#6F41FF] bg-clip-text text-transparent">
+          404
+        </h1>
+        <p className="text-2xl font-semibold mb-6 bg-white bg-clip-text text-transparent">
+          Page Not Found
+        </p>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90 text-base"
         >
           Back to Home
-        </a>
+        </button>
       </div>
     </div>
   );
