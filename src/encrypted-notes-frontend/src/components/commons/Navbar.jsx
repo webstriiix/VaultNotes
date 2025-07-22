@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,7 +57,7 @@ export default function Navbar() {
           <ul
             className={`transition-all duration-300 transform md:flex text-white md:static md:flex-row md:space-x-8 ${
               isMenuOpen
-                ? `absolute top-full left-0 right-0 bg-[#0C0B27] flex flex-col items-center space-y-6 py-6 md:flex ${
+                ? `absolute top-full left-0 right-0 bg-[#01040A] flex flex-col items-center space-y-6 py-6 md:flex ${
                     showNavbar ? "translate-y-0" : "-translate-y-full"
                   }`
                 : "hidden md:flex"
@@ -77,14 +79,23 @@ export default function Navbar() {
               </a>
             </li>
             <li className="md:hidden">
-              <button className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90">
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate("/dashboard");
+                }}
+                className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90"
+              >
                 Login
               </button>
             </li>
           </ul>
 
           <div className="hidden md:flex items-center space-x-4">
-            <button className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90"
+            >
               Login
             </button>
           </div>
