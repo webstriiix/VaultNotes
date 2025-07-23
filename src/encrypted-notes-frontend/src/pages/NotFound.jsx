@@ -13,7 +13,7 @@ export default function NotFound() {
           Page Not Found
         </p>
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/notes")}
           className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90 text-base"
         >
           Back to Home
