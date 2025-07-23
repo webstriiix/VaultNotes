@@ -16,8 +16,6 @@ import {
   IoClose,
   IoDocument,
   IoFolder,
-  IoHeart,
-  IoHeartOutline,
   IoPricetag,
   IoSave,
 } from "react-icons/io5";
@@ -27,7 +25,6 @@ const CreateNotes = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
-  const [isFavorite, setIsFavorite] = useState(false);
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState("");
 
@@ -82,7 +79,6 @@ const CreateNotes = () => {
       category: category || "Personal",
       createdAt: new Date().toISOString().split("T")[0],
       updatedAt: new Date().toISOString().split("T")[0],
-      isFavorite,
       tags,
       color:
         categories.find((cat) => cat.key === category.toLowerCase())?.color ||
@@ -96,7 +92,6 @@ const CreateNotes = () => {
     setTitle("");
     setContent("");
     setCategory("");
-    setIsFavorite(false);
     setTags([]);
     setNewTag("");
   };
@@ -130,21 +125,6 @@ const CreateNotes = () => {
               </div>
             </div>
             <div className="flex gap-3">
-              <Button
-                isIconOnly
-                variant="bordered"
-                size="lg"
-                onClick={() => setIsFavorite(!isFavorite)}
-                className={`border border-[#3C444D] shadow-sm hover:shadow-md rounded-xl ${
-                  isFavorite ? "bg-danger-50 border-danger" : ""
-                }`}
-              >
-                {isFavorite ? (
-                  <IoHeart className="h-5 w-5 text-danger" />
-                ) : (
-                  <IoHeartOutline className="h-5 w-5" />
-                )}
-              </Button>
               <Button
                 color="primary"
                 size="lg"
@@ -207,8 +187,7 @@ const CreateNotes = () => {
                         maxRows={16}
                         classNames={{
                           input: "text-sm sm:text-base leading-relaxed",
-                          inputWrapper:
-                            "border-[#3C444D] shadow-sm rounded-xl",
+                          inputWrapper: "border-[#3C444D] shadow-sm rounded-xl",
                         }}
                       />
                     </div>

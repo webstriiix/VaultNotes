@@ -17,7 +17,6 @@ import {
   IoCalendar,
   IoDocumentText,
   IoEllipsisVertical,
-  IoHeart,
   IoPricetag,
   IoSearch,
 } from "react-icons/io5";
@@ -27,7 +26,7 @@ const Notes = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
 
-  // Sample notes data
+  // Sample notes data (removed isFavorite)
   const [notes] = useState([
     {
       id: 1,
@@ -37,7 +36,6 @@ const Notes = () => {
       category: "Work",
       createdAt: "2024-01-15",
       updatedAt: "2024-01-20",
-      isFavorite: true,
       tags: ["project", "mobile", "ux"],
       color: "primary",
     },
@@ -49,7 +47,6 @@ const Notes = () => {
       category: "Work",
       createdAt: "2024-01-18",
       updatedAt: "2024-01-18",
-      isFavorite: false,
       tags: ["meeting", "goals", "budget"],
       color: "primary",
     },
@@ -61,7 +58,6 @@ const Notes = () => {
       category: "Personal",
       createdAt: "2024-01-10",
       updatedAt: "2024-01-12",
-      isFavorite: true,
       tags: ["books", "reading", "personal"],
       color: "success",
     },
@@ -73,7 +69,6 @@ const Notes = () => {
       category: "Personal",
       createdAt: "2024-01-05",
       updatedAt: "2024-01-14",
-      isFavorite: false,
       tags: ["travel", "vacation", "planning"],
       color: "success",
     },
@@ -85,7 +80,6 @@ const Notes = () => {
       category: "Personal",
       createdAt: "2024-01-08",
       updatedAt: "2024-01-16",
-      isFavorite: false,
       tags: ["cooking", "recipes", "food"],
       color: "success",
     },
@@ -97,7 +91,6 @@ const Notes = () => {
       category: "Education",
       createdAt: "2024-01-12",
       updatedAt: "2024-01-19",
-      isFavorite: true,
       tags: ["learning", "skills", "certification"],
       color: "secondary",
     },
@@ -112,7 +105,6 @@ const Notes = () => {
       );
 
     if (selectedFilter === "all") return matchesSearch;
-    if (selectedFilter === "favorites") return matchesSearch && note.isFavorite;
     return matchesSearch && note.category.toLowerCase() === selectedFilter;
   });
 
@@ -127,7 +119,6 @@ const Notes = () => {
 
   const filterButtons = [
     { key: "all", label: "All Notes" },
-    { key: "favorites", label: "Favorites" },
     { key: "work", label: "Work" },
     { key: "personal", label: "Personal" },
     { key: "education", label: "Education" },
@@ -136,7 +127,6 @@ const Notes = () => {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-background p-6">
-        {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-3">
@@ -157,9 +147,7 @@ const Notes = () => {
           </Button>
         </div>
 
-        {/* Search and Filter Section */}
         <div className="flex flex-col lg:flex-row gap-6 mb-10">
-          {/* Search Bar */}
           <div className="flex-1">
             <Input
               type="text"
@@ -179,7 +167,6 @@ const Notes = () => {
             />
           </div>
 
-          {/* Filter Buttons */}
           <div className="flex gap-3 flex-wrap">
             {filterButtons.map((filter) => (
               <Button
@@ -200,7 +187,6 @@ const Notes = () => {
           </div>
         </div>
 
-        {/* Notes Grid */}
         {filteredNotes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredNotes.map((note) => (
@@ -223,57 +209,46 @@ const Notes = () => {
                         {note.category}
                       </Chip>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {note.isFavorite && (
-                        <IoHeart className="h-6 w-6 text-danger" />
-                      )}
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button
-                            isIconOnly
-                            size="md"
-                            variant="bordered"
-                            className="border border-[#3C444D] shadow-sm hover:shadow-md rounded-md"
-                          >
-                            <IoEllipsisVertical className="h-5 w-5" />
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          aria-label="Note actions"
-                          className="bg-content1 rounded-2xl shadow-lg border bg-black border-[#3C444D]"
-                          itemClasses={{
-                            base: "bg-content1 hover:bg-default-100 data-[hover=true]:bg-default-100 rounded-xl",
-                          }}
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button
+                          isIconOnly
+                          size="md"
+                          variant="bordered"
+                          className="border border-[#3C444D] shadow-sm hover:shadow-md rounded-md"
                         >
-                          <DropdownItem key="edit">Edit</DropdownItem>
-                          <DropdownItem key="duplicate">Duplicate</DropdownItem>
-                          <DropdownItem key="favorite">
-                            {note.isFavorite
-                              ? "Remove from favorites"
-                              : "Add to favorites"}
-                          </DropdownItem>
-                          <DropdownItem
-                            key="share-readonly"
-                            onClick={() => alert("Share as read only")}
-                          >
-                            Share as Read Only
-                          </DropdownItem>
-                          <DropdownItem
-                            key="share-edit"
-                            onClick={() => alert("Share with edit access")}
-                          >
-                            Share with Edit Access
-                          </DropdownItem>
-                          <DropdownItem
-                            key="delete"
-                            className="text-danger"
-                            color="danger"
-                          >
-                            Delete
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </Dropdown>
-                    </div>
+                          <IoEllipsisVertical className="h-5 w-5" />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu
+                        aria-label="Note actions"
+                        className="bg-content1 rounded-2xl shadow-lg border bg-black border-[#3C444D]"
+                        itemClasses={{
+                          base: "bg-content1 hover:bg-default-100 data-[hover=true]:bg-default-100 rounded-xl",
+                        }}
+                      >
+                        <DropdownItem key="edit">Edit</DropdownItem>
+                        <DropdownItem
+                          key="share-readonly"
+                          onClick={() => alert("Share as read only")}
+                        >
+                          Share as Read Only
+                        </DropdownItem>
+                        <DropdownItem
+                          key="share-edit"
+                          onClick={() => alert("Share with edit access")}
+                        >
+                          Share with Edit Access
+                        </DropdownItem>
+                        <DropdownItem
+                          key="delete"
+                          className="text-danger"
+                          color="danger"
+                        >
+                          Delete
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
                   </div>
                 </CardHeader>
 
@@ -286,7 +261,6 @@ const Notes = () => {
                     {note.content}
                   </p>
 
-                  {/* Tags */}
                   <div className="flex flex-wrap gap-2 mb-4">
                     {note.tags.slice(0, 3).map((tag) => (
                       <Chip
@@ -321,7 +295,6 @@ const Notes = () => {
             ))}
           </div>
         ) : (
-          // Empty State
           <div className="flex flex-col items-center justify-center py-24">
             <div className="text-center max-w-md">
               <div className="bg-default-100 rounded-full p-8 mb-8 inline-block border border-[#3C444D]">
