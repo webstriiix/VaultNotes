@@ -253,6 +253,18 @@ const Notes = () => {
                               : "Add to favorites"}
                           </DropdownItem>
                           <DropdownItem
+                            key="share-readonly"
+                            onClick={() => alert("Share as read only")}
+                          >
+                            Share as Read Only
+                          </DropdownItem>
+                          <DropdownItem
+                            key="share-edit"
+                            onClick={() => alert("Share with edit access")}
+                          >
+                            Share with Edit Access
+                          </DropdownItem>
+                          <DropdownItem
                             key="delete"
                             className="text-danger"
                             color="danger"
