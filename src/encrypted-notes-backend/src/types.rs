@@ -9,7 +9,21 @@ pub struct Note {
     pub id: NoteId,
     pub owner: Principal,
     pub encrypted: String,
-    pub shared_with: Vec<Principal>,
+    pub shared_read: Vec<Principal>,
+    #[serde(default)]
+    pub shared_edit: Vec<Principal>,
+}
+
+impl Note {
+    pub fn can_read(&self, principal: &Principal) -> bool {
+        &self.owner == principal
+            || self.shared_read.contains(principal)
+            || self.shared_edit.contains(principal)
+    }
+
+    pub fn can_edit(&self, principal: &Principal) -> bool {
+        &self.owner == principal || self.shared_edit.contains(principal)
+    }
 }
 
 impl Storable for Note {
