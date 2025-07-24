@@ -7,11 +7,7 @@ import { useInternetIdentity } from "ic-use-internet-identity";
 
 export default function Sidebar({ sidebarItems, isOpen }) {
   const navigate = useNavigate();
-<<<<<<< HEAD
   const { clear } = useInternetIdentity();
-=======
-  const location = useLocation();
->>>>>>> 651b38e6d85e2cc2a27cdff82a149c49867e9763
 
   const handleLogout = async () => {
     await clear();
