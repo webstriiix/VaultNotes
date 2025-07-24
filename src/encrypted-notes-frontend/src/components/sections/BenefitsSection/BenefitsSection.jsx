@@ -13,7 +13,7 @@ export default function BenefitsSection() {
         <h2 className="text-2xl md:text-4xl mt-10 font-bold">
           Why{" "}
           <span className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] bg-clip-text text-transparent">
-            Encrypted Notes
+            Vault Notes
           </span>{" "}
           is Right for You?
         </h2>
@@ -27,12 +27,12 @@ export default function BenefitsSection() {
         />
         <BenefitCard
           icon={<FiUserCheck size={48} />}
-          title="Wallet-Based Access"
-          description="Sign in securely with your Phantom Wallet—no passwords, just Web3-native authentication."
+          title="Passwordless Access"
+          description="Sign in securely using Internet Identity—Web3-native authentication with no passwords needed."
         />
         <BenefitCard
           icon={<FiUsers size={48} />}
-          title="Real-Time Collaboration"
+          title="Collaboration"
           description="Invite others to view or edit your notes, making teamwork seamless and secure."
         />
       </div>

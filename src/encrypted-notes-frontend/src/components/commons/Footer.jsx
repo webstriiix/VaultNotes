@@ -14,7 +14,7 @@ export default function Footer() {
                 className="w-10 md:w-12"
               />
               <span className="text-lg md:text-xl font-semibold">
-                Encrypted Notes
+                Vault Notes
               </span>
             </Link>
           </div>
@@ -34,7 +34,7 @@ export default function Footer() {
         </div>
 
         <p className="text-gray-400 text-center mt-4">
-          &copy; {currentYear}, Encrypted Notes. All Rights Reserved.
+          &copy; {currentYear}, Vault Notes. All Rights Reserved.
         </p>
       </div>
     </footer>
