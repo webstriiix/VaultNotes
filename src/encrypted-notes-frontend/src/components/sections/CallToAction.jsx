@@ -5,7 +5,7 @@ export default function CallToActionSection() {
         <h2 className="text-3xl md:text-4xl font-bold leading-tight">
           Ready to Secure Your Notes with{" "}
           <span className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] bg-clip-text text-transparent">
-            Encrypted Notes
+            Vault Notes
           </span>
           ?
         </h2>

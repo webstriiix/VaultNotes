@@ -80,13 +80,34 @@ export default function Navbar() {
               </a>
             </li>
             <li className="md:hidden">
+<<<<<<< HEAD
               {/* Ganti tombol Login dengan LoginButton */}
               <LoginButton />
+=======
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate("/notes");
+                }}
+                className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90"
+              >
+                Login
+              </button>
+>>>>>>> 651b38e6d85e2cc2a27cdff82a149c49867e9763
             </li>
           </ul>
 
           <div className="hidden md:flex items-center space-x-4">
+<<<<<<< HEAD
             <LoginButton />
+=======
+            <button
+              onClick={() => navigate("/notes")}
+              className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90"
+            >
+              Login
+            </button>
+>>>>>>> 651b38e6d85e2cc2a27cdff82a149c49867e9763
           </div>
         </div>
       </nav>

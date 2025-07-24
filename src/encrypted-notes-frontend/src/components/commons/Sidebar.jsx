@@ -1,13 +1,17 @@
 import { Button, Listbox, ListboxItem } from "@heroui/react";
 import { CiLogout } from "react-icons/ci";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../../utlis/cn";
 import logo from "/assets/logo.png";
 import { useInternetIdentity } from "ic-use-internet-identity";
 
 export default function Sidebar({ sidebarItems, isOpen }) {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const { clear } = useInternetIdentity();
+=======
+  const location = useLocation();
+>>>>>>> 651b38e6d85e2cc2a27cdff82a149c49867e9763
 
   const handleLogout = async () => {
     await clear();
@@ -22,16 +26,16 @@ export default function Sidebar({ sidebarItems, isOpen }) {
       )}
     >
       <div>
-        <div className="flex justify-center">
-          <img
-            src={logo}
-            alt="Logo"
-            width={180}
-            height={60}
-            className="mb-6 w-24 cursor-pointer"
-            onClick={() => navigate("/")}
-          />
+        <div
+          className="flex items-center justify-center gap-3 mb-6 cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          <img src={logo} alt="Logo" className="w-16 h-16" />
+          <span className="text-xl font-bold text-white tracking-wide">
+            Vault Notes
+          </span>
         </div>
+
         <Listbox
           items={sidebarItems}
           variant="solid"
@@ -56,6 +60,7 @@ export default function Sidebar({ sidebarItems, isOpen }) {
           )}
         </Listbox>
       </div>
+
       <div className="flex items-center p-1">
         <Button
           fullWidth
