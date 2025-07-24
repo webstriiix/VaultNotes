@@ -82,7 +82,7 @@ export default function Navbar() {
               <button
                 onClick={() => {
                   setIsMenuOpen(false);
-                  navigate("/dashboard");
+                  navigate("/notes");
                 }}
                 className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90"
               >
@@ -93,7 +93,7 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center space-x-4">
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/notes")}
               className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90"
             >
               Login

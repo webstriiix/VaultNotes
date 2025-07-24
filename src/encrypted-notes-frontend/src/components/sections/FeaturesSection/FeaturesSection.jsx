@@ -13,7 +13,7 @@ export default function FeaturesSection() {
         <h2 className="text-4xl font-bold mt-7">
           How{" "}
           <span className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] bg-clip-text text-transparent">
-            Encrypted Notes
+            Vault Notes
           </span>{" "}
           Works
         </h2>
