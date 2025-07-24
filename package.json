@@ -14,5 +14,12 @@
   "type": "module",
   "workspaces": [
     "src/encrypted-notes-frontend"
-  ]
+  ],
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6"
+  },
+  "dependencies": {
+    "ic-use-actor": "^0.1.0"
+  }
 }

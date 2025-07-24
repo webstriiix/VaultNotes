@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { LoginButton } from "../sections/LoginButton";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -79,25 +80,13 @@ export default function Navbar() {
               </a>
             </li>
             <li className="md:hidden">
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  navigate("/dashboard");
-                }}
-                className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90"
-              >
-                Login
-              </button>
+              {/* Ganti tombol Login dengan LoginButton */}
+              <LoginButton />
             </li>
           </ul>
 
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-full shadow-md hover:opacity-90"
-            >
-              Login
-            </button>
+            <LoginButton />
           </div>
         </div>
       </nav>
