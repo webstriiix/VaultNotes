@@ -66,35 +66,39 @@ const CreateNotes = () => {
     }
   };
 
-  const handleSave = () => {
-    if (!title.trim() || !content.trim()) {
-      alert("Title and content are required!");
-      return;
-    }
+    const handleSave = async () => {
+        if (!title.trim() || !content.trim()) {
+            alert("Title and content are required!");
+            return;
+        }
 
-    const newNote = {
-      id: Date.now(),
-      title: title.trim(),
-      content: content.trim(),
-      category: category || "Personal",
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
-      tags,
-      color:
-        categories.find((cat) => cat.key === category.toLowerCase())?.color ||
-        "primary",
+        const noteData = {
+            title: title.trim(),
+            content: content.trim(),
+            category: category || "Personal",
+            tags,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+
+        const encrypted = encryptNoteData(noteData);
+
+        try {
+            // Kirim ke smart contract
+            await window.canister.encryptedNotesBackend.create_note(encrypted);
+
+            alert("Note saved successfully!");
+            // Reset form
+            setTitle("");
+            setContent("");
+            setCategory("");
+            setTags([]);
+            setNewTag("");
+        } catch (error) {
+            console.error("Failed to save note:", error);
+            alert("Failed to save note.");
+        }
     };
-
-    console.log("New Note:", newNote);
-    alert("Note saved successfully!");
-
-    // Reset form
-    setTitle("");
-    setContent("");
-    setCategory("");
-    setTags([]);
-    setNewTag("");
-  };
 
   const selectedCategory = categories.find(
     (cat) => cat.key === category.toLowerCase()
