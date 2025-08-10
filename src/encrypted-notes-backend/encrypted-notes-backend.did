@@ -1,3 +1,19 @@
+type Note = record {
+  id : nat;
+  owner : principal;
+  encrypted : text;
+  shared_edit : vec principal;
+  shared_read : vec principal;
+};
 service : {
-    "greet": (text) -> (text) query;
+  create_note : (text) -> (nat);
+  delete_note : (nat) -> ();
+  encrypted_symmetric_key_for_note : (nat, blob) -> (text);
+  read_notes : () -> (vec Note);
+  share_note_edit : (nat, principal) -> ();
+  share_note_read : (nat, principal) -> ();
+  symmetric_key_verification_key_for_note : () -> (text);
+  unshare_note_edit : (nat, principal) -> ();
+  unshare_note_read : (nat, principal) -> ();
+  update_note : (nat, text) -> ();
 }

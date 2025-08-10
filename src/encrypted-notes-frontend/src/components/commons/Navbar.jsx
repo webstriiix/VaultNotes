@@ -1,3 +1,4 @@
+import { InternetIdentityProvider } from "ic-use-internet-identity";
 import { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -81,12 +82,20 @@ export default function Navbar() {
             </li>
             <li className="md:hidden">
               {/* Ganti tombol Login dengan LoginButton */}
-              <LoginButton />
+              <InternetIdentityProvider
+                identityProvider="http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:4943"
+              >
+                <LoginButton />
+              </InternetIdentityProvider>
             </li>
           </ul>
 
           <div className="hidden md:flex items-center space-x-4">
-            <LoginButton />
+             <InternetIdentityProvider
+              identityProvider="http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:4943"
+            >
+              <LoginButton />
+            </InternetIdentityProvider>
           </div>
         </div>
       </nav>
