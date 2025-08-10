@@ -1,5 +1,5 @@
-import { Route, BrowserRouter as Router, Routes, Navigate } from "react-router-dom";
 import { InternetIdentityProvider, useInternetIdentity } from "ic-use-internet-identity";
+import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import CreateNotes from "./pages/Notes/CreateNotes";
