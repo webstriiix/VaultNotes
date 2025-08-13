@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import CreateNotes from "./pages/Notes/CreateNotes";
 import Notes from "./pages/Notes/Notes";
 import NotFound from "./pages/NotFound";
+import Actors from "./components/sections/Actors";
 
 function ProtectedRoute({ children }) {
   const { identity } = useInternetIdentity();
@@ -15,15 +16,17 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <InternetIdentityProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
-          <Route path="/create-notes" element={<ProtectedRoute><CreateNotes /></ProtectedRoute>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
+      <Actors>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
+            <Route path="/create-notes" element={<ProtectedRoute><CreateNotes /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+      </Actors>
     </InternetIdentityProvider>
   );
 }

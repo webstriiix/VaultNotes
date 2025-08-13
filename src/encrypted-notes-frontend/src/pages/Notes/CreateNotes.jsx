@@ -9,6 +9,7 @@ import {
   SelectItem,
   Textarea,
 } from "@heroui/react";
+import { useActor } from "../../components/sections/Actors";
 import { useState } from "react";
 import {
   IoAdd,
@@ -66,7 +67,8 @@ const CreateNotes = () => {
     }
   };
 
-  const handleSave = () => {
+  const actor = useActor();
+  const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
       alert("Title and content are required!");
       return;
@@ -85,10 +87,19 @@ const CreateNotes = () => {
         "primary",
     };
 
-    console.log("New Note:", newNote);
-    alert("Note saved successfully!");
+    if (!actor) {
+      alert("Actor not ready!");
+      return;
+    }
+    try {
+      const encrypted = JSON.stringify({ title: newNote.title, content: newNote.content, tags: newNote.tags, category: newNote.category });
+      const response = await actor.create_note(encrypted);
+      console.log("Backend response:", response);
+      alert("Note saved successfully! (NoteId: " + response + ")");
+    } catch (e) {
+      alert("Failed to save note to backend: " + e);
+    }
 
-    // Reset form
     setTitle("");
     setContent("");
     setCategory("");

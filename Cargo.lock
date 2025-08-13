@@ -199,6 +199,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "candid",
+ "candid_derive",
  "hex",
  "ic-cdk",
  "ic-cdk-macros",

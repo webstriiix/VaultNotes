@@ -11,7 +11,8 @@ import {
   DropdownTrigger,
   Input,
 } from "@heroui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useActor } from "../../components/sections/Actors";
 import {
   IoAdd,
   IoCalendar,
@@ -25,76 +26,27 @@ import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardL
 const Notes = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [notes, setNotes] = useState([]);
 
-  // Sample notes data (removed isFavorite)
-  const [notes] = useState([
-    {
-      id: 1,
-      title: "Project Ideas",
-      content:
-        "Brainstorming session for new mobile app features and user experience improvements. Need to focus on user-centric design and accessibility features...",
-      category: "Work",
-      createdAt: "2024-01-15",
-      updatedAt: "2024-01-20",
-      tags: ["project", "mobile", "ux"],
-      color: "primary",
-    },
-    {
-      id: 2,
-      title: "Meeting Notes",
-      content:
-        "Discussed quarterly goals, budget allocation, and team restructuring plans. Action items include hiring new developers and updating project timelines...",
-      category: "Work",
-      createdAt: "2024-01-18",
-      updatedAt: "2024-01-18",
-      tags: ["meeting", "goals", "budget"],
-      color: "primary",
-    },
-    {
-      id: 3,
-      title: "Book Recommendations",
-      content:
-        "List of books to read this year including fiction, non-fiction, and technical books. Priority on productivity and personal development...",
-      category: "Personal",
-      createdAt: "2024-01-10",
-      updatedAt: "2024-01-12",
-      tags: ["books", "reading", "personal"],
-      color: "success",
-    },
-    {
-      id: 4,
-      title: "Travel Plans",
-      content:
-        "Summer vacation itinerary, budget planning, and must-visit places. Research on local culture and transportation options...",
-      category: "Personal",
-      createdAt: "2024-01-05",
-      updatedAt: "2024-01-14",
-      tags: ["travel", "vacation", "planning"],
-      color: "success",
-    },
-    {
-      id: 5,
-      title: "Recipe Collection",
-      content:
-        "Favorite recipes from different cuisines, cooking tips, and ingredient lists. Focus on healthy and quick meal preparations...",
-      category: "Personal",
-      createdAt: "2024-01-08",
-      updatedAt: "2024-01-16",
-      tags: ["cooking", "recipes", "food"],
-      color: "success",
-    },
-    {
-      id: 6,
-      title: "Learning Goals",
-      content:
-        "Technical skills to develop this year, online courses, and certification plans. Priority on cloud computing and AI/ML fundamentals...",
-      category: "Education",
-      createdAt: "2024-01-12",
-      updatedAt: "2024-01-19",
-      tags: ["learning", "skills", "certification"],
-      color: "secondary",
-    },
-  ]);
+  const actor = useActor();
+  // Ambil notes dari backend saat mount
+  useEffect(() => {
+    if (!actor) return;
+    actor.read_notes().then((backendNotes) => {
+      setNotes(
+        backendNotes.map((note) => ({
+          id: Number(note.id),
+          title: note.encrypted,
+          content: note.encrypted,
+          category: "Personal",
+          createdAt: "",
+          updatedAt: "",
+          tags: [],
+          color: "primary",
+        }))
+      );
+    });
+  }, [actor]);
 
   const filteredNotes = notes.filter((note) => {
     const matchesSearch =

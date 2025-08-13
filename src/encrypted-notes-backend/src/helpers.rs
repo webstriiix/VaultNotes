@@ -11,8 +11,9 @@ pub fn get_next_id() -> NoteId {
     })
 }
 
-pub fn assert_not_anonymous(principal: &Principal) {
+pub fn assert_not_anonymous(principal: &Principal) -> Result<(), String> {
     if *principal == Principal::anonymous() {
-        ic_cdk::trap("Anonymous principal not allowed");
+        return Err("Anonymous principal not allowed".to_string());
     }
+    Ok(())
 }

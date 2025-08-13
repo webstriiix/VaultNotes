@@ -1,7 +1,7 @@
 {
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
+    "node": ">=22.17.1",
+    "npm": ">=10.9.2"
   },
   "name": "encrypted-notes",
   "scripts": {

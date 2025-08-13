@@ -1,3 +1,16 @@
+type NoteId = nat64;
+type Note = record {
+    id: NoteId;
+    owner: principal;
+    encrypted: text;
+    shared_with: vec principal;
+};
+
 service : {
-    "greet": (text) -> (text) query;
+    create_note: (text) -> (NoteId);
+    read_notes: () -> (vec Note);
+    update_note: (NoteId, text) -> ();
+    delete_note: (NoteId) -> ();
+    share_note: (NoteId, principal) -> ();
+    unshare_note: (NoteId, principal) -> ();
 }
