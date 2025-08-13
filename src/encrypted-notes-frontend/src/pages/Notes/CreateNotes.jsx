@@ -74,39 +74,36 @@ const CreateNotes = () => {
       return;
     }
 
-    const newNote = {
-      id: Date.now(),
+    const noteData = {
       title: title.trim(),
       content: content.trim(),
       category: category || "Personal",
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
       tags,
-      color:
-        categories.find((cat) => cat.key === category.toLowerCase())?.color ||
-        "primary",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     if (!actor) {
       alert("Actor not ready!");
       return;
     }
+    
     try {
-      const encrypted = JSON.stringify({ title: newNote.title, content: newNote.content, tags: newNote.tags, category: newNote.category });
+      const encrypted = JSON.stringify(noteData);
       const response = await actor.create_note(encrypted);
       console.log("Backend response:", response);
       alert("Note saved successfully! (NoteId: " + response + ")");
+      
+      // Reset form
+      setTitle("");
+      setContent("");
+      setCategory("");
+      setTags([]);
+      setNewTag("");
     } catch (e) {
       alert("Failed to save note to backend: " + e);
     }
-
-    setTitle("");
-    setContent("");
-    setCategory("");
-    setTags([]);
-    setNewTag("");
   };
-
   const selectedCategory = categories.find(
     (cat) => cat.key === category.toLowerCase()
   );
