@@ -19,7 +19,7 @@ const MAX_NOTE_SIZE: usize = 1024;
 
 #[ic_cdk::query]
 fn whoami() -> Principal {
-    ic_cdk::caller()
+    msg_caller()
 }
 
 #[update]
