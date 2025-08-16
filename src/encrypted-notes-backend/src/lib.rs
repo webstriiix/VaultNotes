@@ -17,8 +17,13 @@ use crate::types::{Note, NoteId};
 
 const MAX_NOTE_SIZE: usize = 1024;
 
+#[ic_cdk::query]
+fn whoami() -> Principal {
+    msg_caller()
+}
+
 #[update]
-fn create_note(encrypted: String) -> NoteId {
+pub fn create_note(encrypted: String) -> NoteId {
     let caller = msg_caller();
     assert_not_anonymous(&caller);
     assert!(encrypted.len() <= MAX_NOTE_SIZE, "Too large");
@@ -40,7 +45,7 @@ fn create_note(encrypted: String) -> NoteId {
 }
 
 #[update]
-fn read_notes() -> Vec<Note> {
+pub fn read_notes() -> Vec<Note> {
     let caller = msg_caller();
     assert_not_anonymous(&caller);
 
@@ -54,7 +59,7 @@ fn read_notes() -> Vec<Note> {
 }
 
 #[update]
-fn update_note(note_id: NoteId, new_encrypted: String) {
+pub fn update_note(note_id: NoteId, new_encrypted: String) {
     let caller = msg_caller();
     assert!(new_encrypted.len() <= MAX_NOTE_SIZE);
 
@@ -73,7 +78,7 @@ fn update_note(note_id: NoteId, new_encrypted: String) {
 }
 
 #[update]
-fn delete_note(note_id: NoteId) {
+pub fn delete_note(note_id: NoteId) {
     let caller = msg_caller();
     NOTES.with_borrow_mut(|store| {
         if let Some(note) = store.get(&note_id) {
@@ -86,7 +91,7 @@ fn delete_note(note_id: NoteId) {
 }
 
 #[update]
-fn share_note_read(note_id: NoteId, user: Principal) {
+pub fn share_note_read(note_id: NoteId, user: Principal) {
     let caller = msg_caller();
 
     NOTES.with_borrow_mut(|store| {
@@ -104,7 +109,7 @@ fn share_note_read(note_id: NoteId, user: Principal) {
 }
 
 #[update]
-fn share_note_edit(note_id: NoteId, user: Principal) {
+pub fn share_note_edit(note_id: NoteId, user: Principal) {
     let caller = msg_caller();
 
     NOTES.with_borrow_mut(|store| {
@@ -122,7 +127,7 @@ fn share_note_edit(note_id: NoteId, user: Principal) {
 }
 
 #[update]
-fn unshare_note_read(note_id: NoteId, user: Principal) {
+pub fn unshare_note_read(note_id: NoteId, user: Principal) {
     let caller = msg_caller();
 
     NOTES.with_borrow_mut(|store| {
@@ -137,7 +142,7 @@ fn unshare_note_read(note_id: NoteId, user: Principal) {
 }
 
 #[update]
-fn unshare_note_edit(note_id: NoteId, user: Principal) {
+pub fn unshare_note_edit(note_id: NoteId, user: Principal) {
     let caller = msg_caller();
 
     NOTES.with_borrow_mut(|store| {
@@ -160,7 +165,7 @@ fn bls12_381_g2_test_key_1() -> VetKDKeyId {
 }
 
 #[update]
-async fn symmetric_key_verification_key_for_note() -> String {
+pub async fn symmetric_key_verification_key_for_note() -> String {
     let request = VetKDPublicKeyArgs {
         canister_id: None,
         context: b"note_symmetric_key".to_vec(),
@@ -175,7 +180,7 @@ async fn symmetric_key_verification_key_for_note() -> String {
 }
 
 #[update]
-async fn encrypted_symmetric_key_for_note(
+pub async fn encrypted_symmetric_key_for_note(
     note_id: NoteId,
     transport_public_key: Vec<u8>,
 ) -> String {
@@ -212,3 +217,5 @@ async fn encrypted_symmetric_key_for_note(
 
     hex::encode(response.encrypted_key)
 }
+
+ic_cdk::export_candid!();
