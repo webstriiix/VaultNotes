@@ -4,7 +4,7 @@ import { CiLogout } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../../utlis/cn";
 import logo from "/assets/logo.png";
-import createBackendActor from "../../utlis/actor"
+import { createBackendActor } from "../../utlis/actor"
 
 export default function Sidebar({ sidebarItems, isOpen }) {
     const navigate = useNavigate();
