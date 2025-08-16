@@ -6,6 +6,7 @@ type Note = record {
   shared_read : vec principal;
 };
 service : {
+  whoami: () -> (principal) query;
   create_note : (text) -> (nat);
   delete_note : (nat) -> ();
   encrypted_symmetric_key_for_note : (nat, blob) -> (text);

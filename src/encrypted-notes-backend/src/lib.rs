@@ -17,6 +17,11 @@ use crate::types::{Note, NoteId};
 
 const MAX_NOTE_SIZE: usize = 1024;
 
+#[ic_cdk::query]
+fn whoami() -> Principal {
+    ic_cdk::caller()
+}
+
 #[update]
 pub fn create_note(encrypted: String) -> NoteId {
     let caller = msg_caller();
