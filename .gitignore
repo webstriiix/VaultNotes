@@ -9,7 +9,7 @@
 
 # dfx temporary files
 .dfx/
-venv/
+
 
 # generated files
 **/declarations/
@@ -24,3 +24,7 @@ dist/
 
 # environment variables
 .env
+
+# model env
+venv/
+setup-model.py
