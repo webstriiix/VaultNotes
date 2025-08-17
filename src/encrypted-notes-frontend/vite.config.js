@@ -19,9 +19,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": {
+      "/api/v2": {
         target: "http://127.0.0.1:4943",
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/v2/, "/api/v2"),
       },
     },
   },
@@ -41,3 +42,4 @@ export default defineConfig({
     dedupe: ["@dfinity/agent"],
   },
 });
+

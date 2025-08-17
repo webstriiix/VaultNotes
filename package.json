@@ -20,6 +20,15 @@
     "@types/react-dom": "^19.1.6"
   },
   "dependencies": {
-    "ic-use-actor": "^0.1.0"
+    "@dfinity/agent": "^3.2.1",
+    "@dfinity/auth-client": "^3.2.1",
+    "@dfinity/candid": "^3.2.1",
+    "@dfinity/identity": "^3.2.1",
+    "@dfinity/principal": "^3.2.1",
+    "@dfinity/vetkeys": "^0.4.0",
+    "@ic-reactor/react": "^2.0.0",
+    "@xstate/store": "^3.8.5",
+    "ic-use-actor": "^0.1.0",
+    "uuid": "^11.1.0"
   }
 }

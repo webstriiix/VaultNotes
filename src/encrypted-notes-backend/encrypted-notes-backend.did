@@ -1,16 +1,20 @@
-type NoteId = nat64;
 type Note = record {
-    id: NoteId;
-    owner: principal;
-    encrypted: text;
-    shared_with: vec principal;
+  id : nat;
+  owner : principal;
+  encrypted : text;
+  shared_edit : vec principal;
+  shared_read : vec principal;
 };
-
 service : {
-    create_note: (text) -> (NoteId);
-    read_notes: () -> (vec Note);
-    update_note: (NoteId, text) -> ();
-    delete_note: (NoteId) -> ();
-    share_note: (NoteId, principal) -> ();
-    unshare_note: (NoteId, principal) -> ();
+  whoami: () -> (principal) query;
+  create_note : (text) -> (nat);
+  delete_note : (nat) -> ();
+  encrypted_symmetric_key_for_note : (nat, blob) -> (text);
+  read_notes : () -> (vec Note);
+  share_note_edit : (nat, principal) -> ();
+  share_note_read : (nat, principal) -> ();
+  symmetric_key_verification_key_for_note : () -> (text);
+  unshare_note_edit : (nat, principal) -> ();
+  unshare_note_read : (nat, principal) -> ();
+  update_note : (nat, text) -> ();
 }
