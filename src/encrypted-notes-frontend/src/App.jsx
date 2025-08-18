@@ -5,7 +5,6 @@ import Home from "./pages/Home";
 import CreateNotes from "./pages/Notes/CreateNotes";
 import Notes from "./pages/Notes/Notes";
 import NotFound from "./pages/NotFound";
-import { canisterId as internetIdentityCanisterId } from "../../declarations/internet_identity";
 
 function ProtectedRoute({ children }) {
     const { identity } = useInternetIdentity();
@@ -15,7 +14,7 @@ function ProtectedRoute({ children }) {
 
 function App() {
     return (
-        <InternetIdentityProvider canisterId={internetIdentityCanisterId}>
+        <InternetIdentityProvider>
                 <Router>
                     <Routes>
                         <Route path="/" element={<Home />} />
