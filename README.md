@@ -83,7 +83,7 @@ graph TB
 
 ```bash
 # 1. Clone and navigate
-git clone https://github.com/yourusername/vault-notes
+git clone https://github.com/yourusername/VaultNotes
 cd vault-notes
 
 # 2. Start local Internet Computer replica
