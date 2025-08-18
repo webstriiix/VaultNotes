@@ -181,7 +181,7 @@ We believe in the power of community! Here's how you can help make VaultNotes ev
   <h3>🚀 Ready to revolutionize your note-taking?</h3>
   <p><strong>Start your VaultNotes journey today!</strong></p>
   
-  <a href="https://github.com/yourusername/vault-notes/issues">
+  <a href="https://github.com/yourusername/VaultNotes/issues">
     <img src="https://img.shields.io/badge/Report_Bug-29ABE2?style=for-the-badge&logo=github&logoColor=white" alt="Report Bug" />
   </a>
 </div>
