@@ -177,12 +177,6 @@ We believe in the power of community! Here's how you can help make VaultNotes ev
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 <div align="center">
   <h3>🚀 Ready to revolutionize your note-taking?</h3>
   <p><strong>Start your VaultNotes journey today!</strong></p>
