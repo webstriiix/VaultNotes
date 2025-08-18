@@ -32,18 +32,16 @@
 ### 🚀 **Available Now (MVP)**
 | Feature | Description | Status |
 |---------|-------------|---------|
-| 🔑 **Internet Identity Login** | Secure, passwordless authentication | ✅ Live |
-| 📝 **Smart Note Management** | Create, read, update, delete with style | ✅ Live |
-| 🤝 **Collaborative Spaces** | Real-time shared note editing | ✅ Live |
-| 🤖 **AI Summarization** | Intelligent note summaries at your fingertips | ✅ Live |
+| 🔑 **Internet Identity Login** | Secure, passwordless authentication |
+| 📝 **Smart Note Management** | Create, read, update, delete with style |
+| 🤝 **Collaborative Spaces** | Real-time shared note editing |
+| 🤖 **AI Summarization** | Intelligent note summaries at your fingertips |
 
 ### 🔮 **Coming Soon**
 | Feature | Description | Timeline |
 |---------|-------------|----------|
-| 💳 **Native Bitcoin Integration** | Pay and earn with BTC directly on ICP | Q2 2024 |
-| 🖼️ **NFT Minting** | Transform your best notes into collectible NFTs | Q3 2024 |
-| 🔍 **Semantic Search** | AI-powered search across all your knowledge | Q3 2024 |
-| 📊 **Analytics Dashboard** | Insights into your thinking patterns | Q4 2024 |
+| 💳 **Native Bitcoin Integration** | Pay and earn with BTC directly on ICP |
+| 🖼️ **NFT Minting** | Transform your best notes into collectible NFTs |
 
 ---
 
@@ -64,7 +62,7 @@ graph TB
 </div>
 
 ### 🛠️ **Tech Stack**
-- **🎨 Frontend:** React 18 + Vite + TailwindCSS
+- **🎨 Frontend:** React 19 + Vite + TailwindCSS
 - **⚡ Backend:** Rust → WebAssembly on Internet Computer  
 - **🔐 Authentication:** Internet Identity (Web3 login)
 - **🤖 AI Integration:** Custom summarization engine
