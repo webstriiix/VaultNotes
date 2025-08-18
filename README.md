@@ -1,6 +1,34 @@
-# `encrypted-notes`
+# `Vault Notes`
 
-Welcome to your new `encrypted-notes` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+**VaultNotes** is an **AI-powered decentralized note-taking platform** built on the **Internet Computer (ICP)**.  
+This isn’t just a starter template — it’s the foundation of a **secure, collaborative, and user-owned knowledge platform**.  
+
+---
+
+## 🔐 What is VaultNotes?  
+VaultNotes is a **trustless, encrypted, and shareable note-taking dApp** where individuals fully **own their ideas, thoughts, and collaborations** — secured by **Web3 identity** and powered by decentralized infrastructure.  
+
+---
+
+## ✨ Features (MVP)  
+- 🔑 **Login with Internet Identity**  
+- 📝 **CRUD Notes** (create, read, update, delete)  
+- 🤝 **Shared Notes** for collaboration  
+- 🤖 **Summarize Notes with AI**  
+
+---
+
+## 🚀 Upcoming Features  
+- 💳 **Transactions with Bitcoin** (native BTC on ICP)  
+- 🖼️ **Mint Notes as NFTs**  
+
+---
+
+## 🛠️ Tech Stack  
+- **Frontend:** React + Vite + TailwindCSS  
+- **Backend (Smart Contract):** Rust → compiled to WebAssembly (Wasm) on ICP  
+- **AI Integration:** Summarization API seamlessly embedded in dApp logic  
+
 
 To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
 
@@ -49,7 +77,7 @@ If you are making frontend changes, you can start a development server with
 npm start
 ```
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+Which will start a server at `http://localhost:3000`, proxying API requests to the replica at port 4943.
 
 ### Note on frontend environment variables
 
