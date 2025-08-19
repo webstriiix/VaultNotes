@@ -3,7 +3,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import './index.css';
-import { canisterId as internetIdentityCanisterId } from "../../declarations/internet_identity";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -14,7 +13,13 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-        <InternetIdentityProvider>
+        <InternetIdentityProvider
+            loginOptions={{
+                identityProvider: process.env.DFX_NETWORK === "local"
+                    ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943`
+                    : "https://identity.ic0.app"
+            }}
+        >
             <App />
         </InternetIdentityProvider>
     </React.StrictMode>

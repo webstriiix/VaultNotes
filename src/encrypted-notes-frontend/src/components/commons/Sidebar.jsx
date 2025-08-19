@@ -1,10 +1,12 @@
+import { Actor } from "@dfinity/agent";
 import { Button, Listbox, ListboxItem } from "@heroui/react";
 import { useInternetIdentity } from "ic-use-internet-identity";
 import { CiLogout } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
+import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import { cn } from "../../utlis/cn";
 import logo from "/assets/logo.png";
-import { createBackendActor } from "../../utlis/actor"
+
 
 export default function Sidebar({ sidebarItems, isOpen }) {
     const navigate = useNavigate();
@@ -25,14 +27,14 @@ export default function Sidebar({ sidebarItems, isOpen }) {
             alert("You must log in first.");
             return;
         }
-
+        const actor = encrypted_notes_backend;
         console.log("Identity Principal:", identity?.getPrincipal().toText());
 
 
         try {
-            const actor = createBackendActor(identity);
+            Actor.agentOf(actor).replaceIdentity(identity)
             const principal = await actor.whoami();
-            alert(`Your Principal: ${ principal.toText() }`);
+            alert(`Your Principal: ${principal}`);
         } catch (err) {
             console.error("Failed to fetch whoami:", err);
             alert("Failed to fetch your identity from the backend.");

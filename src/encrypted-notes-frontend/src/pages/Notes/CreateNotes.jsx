@@ -1,3 +1,4 @@
+import { Actor } from "@dfinity/agent";
 import {
     Button,
     Card,
@@ -10,7 +11,7 @@ import {
     Textarea,
 } from "@heroui/react";
 import { useInternetIdentity } from "ic-use-internet-identity";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     IoAdd,
     IoArrowBack,
@@ -20,7 +21,9 @@ import {
     IoPricetag,
     IoSave,
 } from "react-icons/io5";
+import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
+import { CryptoService } from "../../utlis/encryption";
 
 
 const CreateNotes = () => {
@@ -29,8 +32,7 @@ const CreateNotes = () => {
     const [category, setCategory] = useState("");
     const [tags, setTags] = useState([]);
     const [newTag, setNewTag] = useState("");
-    const actor = createActor();
-    const { identity, isAuthenticated } = useInternetIdentity();
+    const { identity } = useInternetIdentity();
 
     // Predefined categories
     const categories = [
@@ -41,6 +43,14 @@ const CreateNotes = () => {
         { key: "meeting", label: "Meeting", color: "primary" },
         { key: "project", label: "Project", color: "danger" },
     ];
+
+    useEffect(() => {
+        if (identity) {
+            console.log("Principal:", identity.getPrincipal().toText());
+        } else {
+            console.log("No identity (anonymous)");
+        }
+    }, [identity]);
 
     // Suggested tags
     const suggestedTags = [
@@ -70,69 +80,81 @@ const CreateNotes = () => {
         }
     };
 
-    // const handleSave = async () => {
-    //     // Ensure user is logged in
-    //     const authClient = await AuthClient.create();
-    //     const identity = authClient.getIdentity();
+    const handleSave = async () => {
+        const actor = encrypted_notes_backend;
+        if (!actor) {
+            alert("Actor not ready yet. Please try again.");
+            return;
+        }
 
-    //     console.log("Identity principal:", identity.getPrincipal().toText());
+        if (!identity || identity.getPrincipal().isAnonymous()) {
+            alert("You must log in first.");
+            return;
+        }
+
+        if (!title.trim() || !content.trim()) {
+            alert("Title and content are required!");
+            return;
+        }
+
+        console.log("Identity Principal:", identity.getPrincipal().toText());
+
+        try {
+            Actor.agentOf(actor).replaceIdentity(identity);
+
+            // Prepare note metadata
+            const noteData = {
+                title: title.trim(),
+                content: content.trim(),
+                category: category || "Personal",
+                tags,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
+            const plaintext = JSON.stringify(noteData);
+
+            console.log(plaintext)
+
+            console.log("[1/4] Creating empty note on-chain...");
+            // Step 1: create empty note to get ID
+            const noteIdRaw = await actor.create_note("");
+            const noteId = BigInt(noteIdRaw);
+            console.log("✅ Note ID created:", noteId.toString());
+
+            console.log("[2/4] Encrypting note locally...");
+            // Step 2: encrypt plaintext using note key
+            const cryptoService = new CryptoService(actor, identity);
+            const owner = identity.getPrincipal().toText();
+
+            console.log("🔑 Fetching/deriving note key...");
+            const encryptedBase64 = await cryptoService.encryptWithNoteKey(
+                noteId,
+                owner,
+                plaintext
+            );
+            console.log("✅ Encryption complete. Ciphertext length:", encryptedBase64.length);
+
+            console.log("[3/4] Updating note on-chain with ciphertext...");
+            // Step 3: update note on-chain
+            await actor.update_note(noteId, encryptedBase64);
+
+            console.log("[4/4] Done. Note saved on-chain.");
+            alert("Note saved successfully!");
+
+            // Reset form
+            setTitle("");
+            setContent("");
+            setCategory("");
+            setTags([]);
+            setNewTag("");
+
+        } catch (err) {
+            console.error("❌ Failed to save note:", err);
+            alert("Failed to save note: " + (err.message || err));
+        }
+    };
 
 
-    //     if (!identity || identity.getPrincipal().isAnonymous()) {
-    //         alert("You must log in before saving a note.");
-    //         return;
-    //     }
-
-    //     // Create actor with authenticated identity
-    //     const authedActor = createActor(process.env.CANISTER_ID_YOUR_CANISTER, {
-    //         agentOptions: { identity },
-    //     });
-
-    //     if (!title.trim() || !content.trim()) {
-    //         alert("Title and content are required!");
-    //         return;
-    //     }
-
-    //     try {
-    //         // Prepare note metadata
-    //         const noteData = {
-    //             title: title.trim(),
-    //             content: content.trim(),
-    //             category: category || "Personal",
-    //             tags,
-    //             createdAt: new Date().toISOString(),
-    //             updatedAt: new Date().toISOString(),
-    //         };
-
-    //         const plaintext = JSON.stringify(noteData);
-
-    //         // Create empty note to get its ID
-    //         const emptyEncrypted = "";
-    //         const noteId = await authedActor.create_note(emptyEncrypted);
-    //         console.log("New note ID:", noteId.toString());
-
-    //         // Encrypt with noteId as key
-    //         const cryptoService = new CryptoService(actor);
-    //         const encryptedBase64 = await cryptoService.encryptWithNoteKey(
-    //             noteId.toString(),
-    //             plaintext
-    //         );
-
-    //         // Update the note with encrypted content
-    //         await authedActor.update_note(noteId, encryptedBase64);
-
-    //         alert("Note saved successfully!");
-    //         setTitle("");
-    //         setContent("");
-    //         setCategory("");
-    //         setTags([]);
-    //         setNewTag("");
-
-    //     } catch (error) {
-    //         console.error("Failed to save note:", error);
-    //         alert("Failed to save note: " + (error.message || error));
-    //     }
-    // };
 
     const selectedCategory = categories.find(
         (cat) => cat.key === category.toLowerCase()
@@ -167,7 +189,7 @@ const CreateNotes = () => {
                                 color="primary"
                                 size="lg"
                                 startContent={<IoSave className="h-5 w-5" />}
-                                onClick={handleSave}
+                                onPress={handleSave}
                                 className="font-semibold shadow-lg rounded-xl border border-[#3C444D] px-6 sm:px-8"
                                 variant="solid"
                             >
