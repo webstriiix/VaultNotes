@@ -1,3 +1,5 @@
+import { LoginButton } from "./LoginButton";
+
 export default function CallToActionSection() {
   return (
     <section className="py-20 text-center text-white ">
@@ -15,9 +17,9 @@ export default function CallToActionSection() {
           privacy, guaranteed.
         </p>
 
-        <button className="mt-6 bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-2xl shadow-lg hover:opacity-90 text-base md:text-lg flex items-center justify-center mx-auto">
-          Start Encrypting
-        </button>
+        <div className="mt-10">
+          <LoginButton loginText="Start Encrypting" />
+        </div>
       </div>
     </section>
   );
