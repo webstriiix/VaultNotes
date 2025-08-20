@@ -135,19 +135,19 @@ use crate::ai_service::{SummaryRequest, SummaryResponse};
 
 ### 1️⃣ **Frontend Integration Testing:**
 - Open VaultNotes: http://u6s2n-gx777-77774-qaaba-cai.localhost:4943/
-- Create new note dengan > 50 karakter
+- Create new note with > 50 characters
 - Verify AI summary muncul otomatis
 - Test different content types
 
 ### 2️⃣ **Backend AI Testing:**
 - Test via Candid interface
 - Verify response formats
-- Performance testing dengan long texts
+- Performance testing with long texts
 - Error handling validation
 
 ### 3️⃣ **Full User Journey:**
-- Login dengan Internet Identity
-- Create encrypted notes dengan AI summaries
+- Login with Internet Identity
+- Create encrypted notes with AI summaries
 - Save, edit, share notes
 - Verify AI integration seamless
 
