@@ -259,15 +259,4 @@ pub fn ai_health_check() -> String {
     "AI Service is running - Ultra Minimal AI Ready!".to_string()
 }
 
-// 🤖 AI Integration Endpoints
-#[update]
-pub fn ai_summarize(request: SummaryRequest) -> SummaryResponse {
-    ai_service::summarize_text(request)
-}
-
-#[ic_cdk::query]
-pub fn ai_health_check() -> String {
-    "AI Service is running - Ultra Minimal AI Ready!".to_string()
-}
-
 export_candid!();
