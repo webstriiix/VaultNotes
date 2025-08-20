@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { encryptWithNoteKey, decryptWithNoteKey } from "../../utlis/encryption";
+import { encryptWithNoteKey, decryptWithNoteKey } from "../../utils/encryption";
 
 const note_id = 123n; // Gunakan BigInt untuk note_id
 const owner = "user@example.com";

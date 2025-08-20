@@ -24,7 +24,7 @@ import {
 } from "react-icons/io5";
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
-import { CryptoService } from "../../utlis/encryption";
+import { CryptoService } from "../../utils/encryption";
 import ShareReadNoteModal from "./ShareReadNoteModal";
 
 const Notes = () => {
