@@ -50,6 +50,17 @@ pub fn get_registered_users() -> Vec<UserProfile> {
     USER_PROFILES.with(|map| map.borrow().iter().map(|(_, v)| v).collect())
 }
 
+#[query]
+pub fn get_other_users(caller: Principal) -> Vec<UserProfile> {
+    USER_PROFILES.with(|map| {
+        map.borrow()
+            .iter()
+            .filter(|(id, _)| *id != caller)
+            .map(|(_, v)| v)
+            .collect()
+    })
+}
+
 #[update]
 pub fn create_note(encrypted: String) -> NoteId {
     let caller = msg_caller();
