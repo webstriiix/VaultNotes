@@ -22,12 +22,14 @@ import {
   IoPricetag,
   IoSearch,
 } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
 import ShareReadNoteModal from "./ShareReadNoteModal";
 
 const Notes = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const { identity } = useInternetIdentity();
@@ -155,6 +157,7 @@ const Notes = () => {
             startContent={<IoAdd className="h-5 w-5" />}
             className="font-semibold shadow-lg border border-[#3C444D] rounded-xl"
             variant="solid"
+            onPress={() => navigate("/create-notes")}
           >
             New Note
           </Button>
@@ -321,6 +324,7 @@ const Notes = () => {
                 startContent={<IoAdd className="h-5 w-5" />}
                 className="font-semibold shadow-lg border border-[#3C444D] px-8 py-3 rounded-xl"
                 variant="solid"
+                onPress={() => navigate("/create-notes")}
               >
                 Create Your First Note
               </Button>

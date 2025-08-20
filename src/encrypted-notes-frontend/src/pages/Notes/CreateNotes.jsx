@@ -12,6 +12,7 @@ import {
 } from "@heroui/react";
 import { useInternetIdentity } from "ic-use-internet-identity";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   IoAdd,
   IoArrowBack,
@@ -27,6 +28,7 @@ import { CryptoService } from "../../utils/encryption";
 
 const CreateNotes = () => {
   const [title, setTitle] = useState("");
+  const navigate = useNavigate();
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [tags, setTags] = useState([]);
@@ -171,6 +173,7 @@ const CreateNotes = () => {
                 variant="bordered"
                 size="lg"
                 className="border border-[#3C444D] shadow-sm hover:shadow-md rounded-xl"
+                onPress={() => navigate(-1)}
               >
                 <IoArrowBack className="h-5 w-5" />
               </Button>
