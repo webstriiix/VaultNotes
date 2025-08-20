@@ -1,14 +1,14 @@
-# 🚀 INTEGRATION GUIDE: Ultra Minimal AI ke VaultNotes
+# 🚀 INTEGRATION GUIDE: Ultra Minimal AI to VaultNotes
 
-## 📋 **Overview Integrasi**
+## 📋 **Integration Overview**
 
-Menambahkan fitur AI Summarization ke aplikasi VaultNotes menggunakan **Ultra Minimal AI** approach tanpa dependency berat.
+Adding AI Summarization features to VaultNotes application using **Ultra Minimal AI** approach without heavy dependencies.
 
-### 🎯 **Strategi Integrasi:**
-1. **Frontend**: React component untuk AI features
-2. **Backend**: Rust canister method untuk AI processing  
-3. **AI Service**: Ultra Minimal AI sebagai core engine
-4. **API**: RESTful endpoints untuk communication
+### 🎯 **Integration Strategy:**
+1. **Frontend**: React component for AI features
+2. **Backend**: Rust canister method for AI processing  
+3. **AI Service**: Ultra Minimal AI as core engine
+4. **API**: RESTful endpoints for communication
 
 ---
 
@@ -632,4 +632,4 @@ dfx canister call encrypted-notes-backend ai_summarize '(
 4. ✅ **Deploy to production**
 5. 🔮 **Future: Add premium AI** via Python service
 
-**Result: VaultNotes dengan AI summarization yang instant, reliable, dan zero-dependency!**
+**Result: VaultNotes with AI summarization that's instant, reliable, and zero-dependency!**

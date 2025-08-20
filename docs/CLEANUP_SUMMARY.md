@@ -51,8 +51,8 @@ encrypted_notes/                   # Clean, production-ready
 │   ├── FINAL_IMPLEMENTATION_SUMMARY.md # Complete summary
 │   └── AI_IMPLEMENTATION_COMPARISON.md # Implementation approaches
 ├── 📁 src/                        # ✅ Clean source code
-│   ├── 🦀 encrypted-notes-backend/ # Rust canister dengan Ultra Minimal AI
-│   ├── ⚛️ encrypted-notes-frontend/ # React app dengan AI components
+│   ├── 🦀 encrypted-notes-backend/ # Rust canister with Ultra Minimal AI
+│   ├── ⚛️ encrypted-notes-frontend/ # React app with AI components
 │   └── 📝 declarations/           # Generated type declarations
 ├── 📁 deps/                       # ✅ ICP dependencies
 ├── 📁 .dfx/                       # ✅ DFX local deployment
@@ -75,12 +75,12 @@ encrypted_notes/                   # Clean, production-ready
 - **Removed:** 35+ unnecessary files
 
 ### 🎯 **Benefits Achieved:**
-- ✅ **Clean Repository** - Easy to understand dan maintain
+- ✅ **Clean Repository** - Easy to understand and maintain
 - ✅ **Production Ready** - Only essential files remain
-- ✅ **Documentation Organized** - All guides dalam `docs/` folder
+- ✅ **Documentation Organized** - All guides in `docs/` folder
 - ✅ **Performance Optimized** - No heavy dependencies
 - ✅ **Storage Efficient** - 91% size reduction
-- ✅ **Developer Friendly** - Clear structure dan navigation
+- ✅ **Developer Friendly** - Clear structure and navigation
 
 ---
 
@@ -88,9 +88,9 @@ encrypted_notes/                   # Clean, production-ready
 
 ### ✅ **What's Live:**
 - 🌐 **Frontend:** http://u6s2n-gx777-77774-qaaba-cai.localhost:4943/
-- 🔧 **Backend API:** Full Rust canister dengan AI endpoints
+- 🔧 **Backend API:** Full Rust canister with AI endpoints
 - 🤖 **Ultra Minimal AI:** Content-aware summarization
-- 📚 **Documentation:** Complete guides dalam `docs/` folder
+- 📚 **Documentation:** Complete guides in `docs/` folder
 
 ### ✅ **What's Clean:**
 - 🗑️ **No Heavy Models** - Zero ONNX dependencies
@@ -108,13 +108,13 @@ encrypted_notes/                   # Clean, production-ready
 
 ## 🏆 **MISSION ACCOMPLISHED**
 
-**VaultNotes telah berhasil di-optimize dari prototype menjadi production-ready application dengan:**
+**VaultNotes has been successfully optimized from prototype to production-ready application with:**
 
-- 🤖 **Ultra Minimal AI** yang bekerja instant
-- 📦 **91% storage reduction** dengan performance yang superior
-- 🔧 **Clean architecture** yang mudah di-maintain
-- 📚 **Complete documentation** untuk future development
-- 🚀 **Live deployment** yang siap digunakan
+- 🤖 **Ultra Minimal AI** that works instantly
+- 📦 **91% storage reduction** with superior performance
+- 🔧 **Clean architecture** that's easy to maintain
+- 📚 **Complete documentation** for future development
+- 🚀 **Live deployment** ready for use
 
 **From 1.8GB prototype → 160MB production masterpiece! 🎉**
 
