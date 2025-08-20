@@ -8,8 +8,10 @@ use ic_cdk::management_canister::{
     VetKDCurve, VetKDDeriveKeyArgs, VetKDDeriveKeyResult, VetKDKeyId, VetKDPublicKeyArgs,
     VetKDPublicKeyResult,
 };
-use ic_cdk::update;
+use ic_cdk::{export_candid, query, update};
 use ic_stable_structures::Storable;
+use storage::USER_PROFILES;
+use types::UserProfile;
 
 use crate::helpers::{assert_not_anonymous, get_next_id};
 use crate::storage::NOTES;
@@ -23,9 +25,35 @@ fn whoami() -> Principal {
 }
 
 #[update]
+pub fn register_user(username: String, email: String) {
+    let user = msg_caller();
+    let _ = assert_not_anonymous(&user);
+
+    let profile = UserProfile {
+        id: user,
+        username,
+        email,
+    };
+
+    USER_PROFILES.with(|users| {
+        users.borrow_mut().insert(user, profile);
+    });
+}
+
+#[query]
+pub fn get_profile(principal: Principal) -> Option<UserProfile> {
+    USER_PROFILES.with(|map| map.borrow().get(&principal))
+}
+
+#[query]
+pub fn get_registered_users() -> Vec<UserProfile> {
+    USER_PROFILES.with(|map| map.borrow().iter().map(|(_, v)| v).collect())
+}
+
+#[update]
 pub fn create_note(encrypted: String) -> NoteId {
     let caller = msg_caller();
-    assert_not_anonymous(&caller);
+    let _ = assert_not_anonymous(&caller);
     assert!(encrypted.len() <= MAX_NOTE_SIZE, "Too large");
 
     let note_id = get_next_id();
@@ -47,7 +75,7 @@ pub fn create_note(encrypted: String) -> NoteId {
 #[update]
 pub fn read_notes() -> Vec<Note> {
     let caller = msg_caller();
-    assert_not_anonymous(&caller);
+    let _ = assert_not_anonymous(&caller);
 
     NOTES.with_borrow(|store| {
         store
@@ -218,4 +246,4 @@ pub async fn encrypted_symmetric_key_for_note(
     hex::encode(response.encrypted_key)
 }
 
-ic_cdk::export_candid!();
+export_candid!();

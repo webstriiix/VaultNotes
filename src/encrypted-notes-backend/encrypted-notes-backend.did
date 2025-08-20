@@ -5,7 +5,15 @@ type Note = record {
   shared_edit : vec principal;
   shared_read : vec principal;
 };
+type UserProfile = record {
+  id : principal;
+  username : text;
+  email : text;
+};
 service : {
+  register_user : (text, text) -> ();
+  get_profile : (principal) -> (opt UserProfile) query;
+  get_registered_users : () -> (vec UserProfile) query;
   whoami: () -> (principal) query;
   create_note : (text) -> (nat);
   delete_note : (nat) -> ();

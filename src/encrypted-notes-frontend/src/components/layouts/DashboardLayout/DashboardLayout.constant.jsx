@@ -1,6 +1,12 @@
-import { MdAddCircle, MdNote } from "react-icons/md";
+import { MdAddCircle, MdNote, MdPerson } from "react-icons/md";
 
 export const SIDEBAR = [
+    {
+    key: "profile",
+    label: "My Profile",
+    href: "/profile",
+    icon: <MdPerson />,
+  },
   {
     key: "notes",
     label: "My Notes",

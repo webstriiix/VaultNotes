@@ -79,12 +79,12 @@ export default function Sidebar({ sidebarItems, isOpen }) {
                         </ListboxItem>
                     )}
                 </Listbox>
-
-                <div className="mt-4">
+{/* 
+               <div className="mt-4">
                     <Button fullWidth variant="flat" onPress={whoAmI}>
                         Who am I?
                     </Button>
-                </div>
+              </div>  */}
             </div>
 
             <div className="flex items-center p-1">
