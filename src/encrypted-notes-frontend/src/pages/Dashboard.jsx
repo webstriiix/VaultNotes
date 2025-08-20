@@ -47,7 +47,6 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background">
         <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Header */}
-          {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-1">
@@ -81,29 +80,40 @@ const Dashboard = () => {
                   <IoKey className="text-default-500" />
                   <p className="text-sm sm:text-base">
                     <span className="font-semibold">Principal ID:</span>{" "}
-                    <Chip
-                      variant="bordered"
-                      size="sm"
-                      className="border border-[#3C444D] px-2 py-0.5 rounded-lg text-xs sm:text-sm"
-                    >
-                      {profile.id.toText()}
-                    </Chip>
+                    {profile.id ? (
+                      <Chip
+                        variant="bordered"
+                        size="sm"
+                        className="border border-[#3C444D] px-2 py-0.5 rounded-lg text-xs sm:text-sm cursor-pointer hover:bg-default-100 transition"
+                        onClick={() =>
+                          navigator.clipboard.writeText(profile.id.toText())
+                        }
+                      >
+                        {profile.id.toText()}
+                      </Chip>
+                    ) : (
+                      "Not available"
+                    )}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <IoAt className="text-default-500" />
-                  <p className="text-sm sm:text-base">
+                  <p>
                     <span className="font-semibold">Username:</span>{" "}
-                    {profile.username}
+                    {profile.username && profile.username.trim() !== ""
+                      ? profile.username
+                      : "Not set yet"}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <IoMail className="text-default-500" />
-                  <p className="text-sm sm:text-base">
+                  <p>
                     <span className="font-semibold">Email:</span>{" "}
-                    {profile.email}
+                    {profile.email && profile.email.trim() !== ""
+                      ? profile.email
+                      : "Not set yet"}
                   </p>
                 </div>
               </CardBody>
