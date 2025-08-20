@@ -1,8 +1,9 @@
+use candid::Principal;
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, StableCell};
 use std::cell::RefCell;
 
-use crate::types::{Note, NoteId};
+use crate::types::{Note, NoteId, UserProfile};
 
 pub type Memory = VirtualMemory<DefaultMemoryImpl>;
 
@@ -22,4 +23,9 @@ thread_local! {
             MEM_MANAGER.with_borrow(|m| m.get(MemoryId::new(1)))
         )
     );
+
+    pub static USER_PROFILES: RefCell<StableBTreeMap<Principal, UserProfile, Memory>> =
+        RefCell::new(StableBTreeMap::init(
+            MEM_MANAGER.with_borrow(|m| m.get(MemoryId::new(2)))
+    ));
 }
