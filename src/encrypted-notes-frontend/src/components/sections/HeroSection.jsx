@@ -1,4 +1,15 @@
+import { useInternetIdentity } from "ic-use-internet-identity";
+
 export default function HeroSection() {
+  const { login, identity, isLoggingIn } = useInternetIdentity();
+  
+  const disabled = isLoggingIn || !!identity;
+  const text = isLoggingIn
+    ? "Initializing..."
+    : identity
+    ? "Already Logged in"
+    : "Get Started";
+
   return (
     <section
       id="home"
@@ -17,8 +28,11 @@ export default function HeroSection() {
           Sign up easily using Internet Identity (Web3 Credential). Create, edit, and share encrypted
           notes anytime, anywhere.
         </p>
-        <button className="mt-6 bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-2xl shadow-lg hover:opacity-90 text-base md:text-lg flex items-center justify-center mx-auto">
-          Get Started
+        <button
+          onClick={login}
+          disabled={disabled}
+          className="mt-6 bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-2xl shadow-lg hover:opacity-90 text-base md:text-lg flex items-center justify-center mx-auto">
+          {text}
         </button>
       </div>
     </section>

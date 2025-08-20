@@ -1,6 +1,7 @@
 mod helpers;
 mod storage;
 mod types;
+mod ai_service;
 
 use candid::Principal;
 use ic_cdk::api::msg_caller;
@@ -14,6 +15,7 @@ use ic_stable_structures::Storable;
 use crate::helpers::{assert_not_anonymous, get_next_id};
 use crate::storage::NOTES;
 use crate::types::{Note, NoteId};
+use crate::ai_service::{SummaryRequest, SummaryResponse};
 
 const MAX_NOTE_SIZE: usize = 1024;
 
@@ -216,6 +218,17 @@ pub async fn encrypted_symmetric_key_for_note(
         .expect("call to vetkd_derive_key failed");
 
     hex::encode(response.encrypted_key)
+}
+
+// 🤖 AI Integration Endpoints
+#[update]
+pub fn ai_summarize(request: SummaryRequest) -> SummaryResponse {
+    ai_service::summarize_text(request)
+}
+
+#[ic_cdk::query]
+pub fn ai_health_check() -> String {
+    "AI Service is running - Ultra Minimal AI Ready!".to_string()
 }
 
 ic_cdk::export_candid!();

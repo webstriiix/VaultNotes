@@ -5,6 +5,21 @@ type Note = record {
   shared_edit : vec principal;
   shared_read : vec principal;
 };
+
+type SummaryRequest = record {
+  text : text;
+  content_type : opt text;
+};
+
+type SummaryResponse = record {
+  summary : text;
+  success : bool;
+  processing_time : float64;
+  compression_ratio : float64;
+  method : text;
+  error : opt text;
+};
+
 service : {
   whoami: () -> (principal) query;
   create_note : (text) -> (nat);
@@ -17,4 +32,6 @@ service : {
   unshare_note_edit : (nat, principal) -> ();
   unshare_note_read : (nat, principal) -> ();
   update_note : (nat, text) -> ();
+  ai_summarize : (SummaryRequest) -> (SummaryResponse);
+  ai_health_check : () -> (text) query;
 }

@@ -24,7 +24,3 @@ dist/
 
 # environment variables
 .env
-
-# model env
-venv/
-setup-model.py
