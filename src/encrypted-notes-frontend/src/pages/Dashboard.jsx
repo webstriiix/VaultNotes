@@ -76,45 +76,52 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardBody className="pt-0 px-6 pb-6 space-y-6">
-                <div className="flex items-center gap-3">
-                  <IoKey className="text-default-500" />
-                  <p className="text-sm sm:text-base">
-                    <span className="font-semibold">Principal ID:</span>{" "}
-                    {profile.id ? (
-                      <Chip
-                        variant="bordered"
-                        size="sm"
-                        className="border border-[#3C444D] px-2 py-0.5 rounded-lg text-xs sm:text-sm cursor-pointer hover:bg-default-100 transition"
-                        onClick={() =>
-                          navigator.clipboard.writeText(profile.id.toText())
-                        }
-                      >
-                        {profile.id.toText()}
-                      </Chip>
-                    ) : (
-                      "Not available"
-                    )}
-                  </p>
+                {/* Principal ID */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <div className="flex items-center gap-2">
+                    <IoKey className="text-default-500 shrink-0" />
+                    <span className="font-semibold">Principal ID:</span>
+                  </div>
+                  {profile.id ? (
+                    <Chip
+                      variant="bordered"
+                      size="sm"
+                      className="border border-[#3C444D] px-2 py-0.5 rounded-lg text-xs sm:text-sm cursor-pointer hover:bg-default-100 transition max-w-full truncate"
+                      onClick={() =>
+                        navigator.clipboard.writeText(profile.id.toText())
+                      }
+                    >
+                      {profile.id.toText()}
+                    </Chip>
+                  ) : (
+                    <span className="text-default-500">Not available</span>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <IoAt className="text-default-500" />
-                  <p>
-                    <span className="font-semibold">Username:</span>{" "}
+                {/* Username */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <div className="flex items-center gap-2">
+                    <IoAt className="text-default-500 shrink-0" />
+                    <span className="font-semibold">Username:</span>
+                  </div>
+                  <span>
                     {profile.username && profile.username.trim() !== ""
                       ? profile.username
                       : "Not set yet"}
-                  </p>
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <IoMail className="text-default-500" />
-                  <p>
-                    <span className="font-semibold">Email:</span>{" "}
+                {/* Email */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <div className="flex items-center gap-2">
+                    <IoMail className="text-default-500 shrink-0" />
+                    <span className="font-semibold">Email:</span>
+                  </div>
+                  <span>
                     {profile.email && profile.email.trim() !== ""
                       ? profile.email
                       : "Not set yet"}
-                  </p>
+                  </span>
                 </div>
               </CardBody>
             </Card>
