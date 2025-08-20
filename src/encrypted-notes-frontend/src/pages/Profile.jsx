@@ -4,6 +4,7 @@ import { useInternetIdentity } from "ic-use-internet-identity";
 import { useEffect, useState } from "react";
 import { IoPerson, IoSave } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { encrypted_notes_backend } from "../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../components/layouts/DashboardLayout/DashboardLayout";
 
@@ -12,6 +13,7 @@ const Profile = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,26 +22,58 @@ const Profile = () => {
       const principal = identity.getPrincipal();
       const existing = await encrypted_notes_backend.get_profile(principal);
       if (existing) {
-        setUsername(existing.username);
-        setEmail(existing.email);
+        setUsername(existing.username || "");
+        setEmail(existing.email || "");
       }
     };
     fetchProfile();
   }, [identity]);
 
+  const validateEmail = (value) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!value) {
+      setEmailError("Email is required");
+      return false;
+    } else if (!regex.test(value)) {
+      setEmailError("Invalid email format");
+      return false;
+    } else {
+      setEmailError("");
+      return true;
+    }
+  };
+
   const handleSave = async () => {
     if (!identity) return;
-    setLoading(true);
 
+    // Validasi username
+    if (!username?.trim()) {
+      toast.error("Username is required");
+      return;
+    }
+
+    // Validasi email
+    if (!email?.trim()) {
+      setEmailError("Email is required");
+      toast.error("Email is required");
+      return;
+    }
+
+    const isValid = validateEmail(email);
+    if (!isValid) {
+      toast.error("Invalid email format");
+      return;
+    }
+
+    setLoading(true);
     try {
       Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
       await encrypted_notes_backend.register_user(username, email);
-
-      alert("Profile saved!");
+      toast.success("Profile saved successfully!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Failed to save profile:", error);
-      alert("Failed to save profile. Please try again.");
+      toast.error("Failed to save profile. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -119,7 +153,17 @@ const Profile = () => {
                     placeholder="Enter your email..."
                     value={email}
                     type="email"
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEmail(val);
+
+                      // Realtime error only for visual feedback
+                      if (val.trim()) {
+                        validateEmail(val);
+                      } else {
+                        setEmailError("");
+                      }
+                    }}
                     size="lg"
                     variant="bordered"
                     classNames={{
@@ -127,6 +171,8 @@ const Profile = () => {
                       inputWrapper:
                         "border-[#3C444D] shadow-sm rounded-xl h-12 sm:h-14",
                     }}
+                    isInvalid={!!emailError}
+                    errorMessage={emailError}
                   />
                 </div>
               </div>
