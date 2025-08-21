@@ -248,7 +248,7 @@ pub async fn encrypted_symmetric_key_for_note(
     hex::encode(response.encrypted_key)
 }
 
-// 🤖 AI Integration Endpoints
+// AI Integration Endpoints
 #[update]
 pub fn ai_summarize(request: SummaryRequest) -> SummaryResponse {
     ai_service::summarize_text(request)
@@ -256,7 +256,7 @@ pub fn ai_summarize(request: SummaryRequest) -> SummaryResponse {
 
 #[ic_cdk::query]
 pub fn ai_health_check() -> String {
-    "AI Service is running - Ultra Minimal AI Ready!".to_string()
+    "AI Service is running...".to_string()
 }
 
 export_candid!();
