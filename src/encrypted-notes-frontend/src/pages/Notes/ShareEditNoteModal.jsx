@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 
-const ShareReadNoteModal = ({ isOpen, onClose, onSave }) => {
+const ShareEditNoteModal = ({ isOpen, onClose, onSave }) => {
   const [allUsers, setAllUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sharedUsers, setSharedUsers] = useState([]);
@@ -75,7 +75,7 @@ const ShareReadNoteModal = ({ isOpen, onClose, onSave }) => {
           <>
             {/* Header */}
             <ModalHeader>
-              <h3 className="text-lg font-bold text-white">Share Note</h3>
+              <h3 className="text-lg font-bold text-white">Share Edit Note</h3>
               <button
                 onClick={close}
                 className="ml-auto text-default-400 hover:text-white transition-colors"
@@ -158,4 +158,4 @@ const ShareReadNoteModal = ({ isOpen, onClose, onSave }) => {
   );
 };
 
-export default ShareReadNoteModal;
+export default ShareEditNoteModal;

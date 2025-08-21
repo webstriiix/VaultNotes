@@ -22,12 +22,17 @@ import {
   IoPricetag,
   IoSearch,
 } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
+import ClipLoader from "react-spinners/ClipLoader"; // ✅ spinner
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
-import { CryptoService } from "../../utlis/encryption";
+import { CryptoService } from "../../utils/encryption";
+import DeleteNoteModal from "./DeleteNoteModal";
+import ShareEditNoteModal from "./ShareEditNoteModal";
 import ShareReadNoteModal from "./ShareReadNoteModal";
 
 const Notes = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const { identity } = useInternetIdentity();
@@ -35,21 +40,59 @@ const Notes = () => {
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [sharedUsers, setSharedUsers] = useState([]);
   const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteNoteId, setDeleteNoteId] = useState(null);
+  const [isShareEditModalOpen, setIsShareEditModalOpen] = useState(false);
+
+  const handleShareEditNote = (noteId) => {
+    setSelectedNoteId(noteId);
+    setIsShareEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsShareEditModalOpen(false);
+    setSelectedNoteId(null);
+  };
+
+  const handleSaveSharedUsersEdit = (users) => {
+    setSharedUsers(users);
+    handleCloseEditModal();
+  };
+
+  const handleDeleteNote = (noteId) => {
+    setDeleteNoteId(noteId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const actor = encrypted_notes_backend;
+      Actor.agentOf(actor).replaceIdentity(identity);
+      await actor.delete_note(deleteNoteId); // asumsi backend ada method delete_note(id)
+      setNotes((prev) => prev.filter((n) => n.id !== deleteNoteId));
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setDeleteNoteId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchNotes = async () => {
       if (!identity || identity.getPrincipal().isAnonymous()) {
         console.warn("User is not logged in.");
+        setLoading(false);
         return;
       }
 
       try {
+        setLoading(true);
         const actor = encrypted_notes_backend;
         Actor.agentOf(actor).replaceIdentity(identity);
         const rawNotes = await actor.read_notes();
-        console.log(rawNotes);
 
-        // ✅ create crypto service instance
         const cryptoService = new CryptoService(actor, identity);
         const decrypted = await Promise.all(
           rawNotes.map(async (n) => {
@@ -82,6 +125,8 @@ const Notes = () => {
         setNotes(decrypted);
       } catch (err) {
         console.error("Failed to fetch notes:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -116,30 +161,31 @@ const Notes = () => {
     { key: "education", label: "Education" },
   ];
 
-  // Handle share modal open
   const handleShareNote = (noteId) => {
-    console.log("Opening share modal for note:", noteId);
     setSelectedNoteId(noteId);
     setIsShareModalOpen(true);
   };
 
-  // Handle modal close
   const handleCloseModal = () => {
-    console.log("Closing share modal");
     setIsShareModalOpen(false);
     setSelectedNoteId(null);
   };
 
-  // Handle save shared users
   const handleSaveSharedUsers = (users) => {
-    console.log("Saving shared users:", users);
     setSharedUsers(users);
     handleCloseModal();
   };
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-background p-6 relative">
+        {loading && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-50">
+            <ClipLoader size={50} color="#FFFFFF" />
+          </div>
+        )}
+
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-3">
@@ -155,11 +201,13 @@ const Notes = () => {
             startContent={<IoAdd className="h-5 w-5" />}
             className="font-semibold shadow-lg border border-[#3C444D] rounded-xl"
             variant="solid"
+            onPress={() => navigate("/create-notes")}
           >
             New Note
           </Button>
         </div>
 
+        {/* Search + Filter */}
         <div className="flex flex-col lg:flex-row gap-6 mb-10">
           <div className="flex-1">
             <Input
@@ -199,13 +247,13 @@ const Notes = () => {
           </div>
         </div>
 
+        {/* Notes Grid */}
         {filteredNotes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredNotes.map((note) => (
               <Card
                 key={note.id}
-                className="hover:scale-[1.02] transition-all duration-200 cursor-pointer border border-[#3C444D] rounded-2xl"
-                shadow="lg"
+                className="border border-[#3C444D] rounded-2xl hover:scale-[1.02] transition-all duration-200 cursor-pointer"
               >
                 <CardHeader className="pb-3 pt-6 px-6">
                   <div className="flex justify-between items-start w-full">
@@ -238,7 +286,12 @@ const Notes = () => {
                           base: "bg-content1 hover:bg-default-100 data-[hover=true]:bg-default-100 rounded-xl",
                         }}
                       >
-                        <DropdownItem key="edit">Edit</DropdownItem>
+                        <DropdownItem
+                          key="edit"
+                          onPress={() => navigate(`/update-note/${note.id}`)}
+                        >
+                          Edit
+                        </DropdownItem>
                         <DropdownItem
                           key="share-readonly"
                           onPress={() => handleShareNote(note.id)}
@@ -247,7 +300,7 @@ const Notes = () => {
                         </DropdownItem>
                         <DropdownItem
                           key="share-edit"
-                          onPress={() => alert("Share with edit access")}
+                          onPress={() => handleShareEditNote(note.id)}
                         >
                           Share with Edit Access
                         </DropdownItem>
@@ -255,6 +308,7 @@ const Notes = () => {
                           key="delete"
                           className="text-danger"
                           color="danger"
+                          onPress={() => handleDeleteNote(note.id)}
                         >
                           Delete
                         </DropdownItem>
@@ -302,45 +356,61 @@ const Notes = () => {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="text-center max-w-md">
-              <div className="bg-default-100 rounded-full p-8 mb-8 inline-block border border-[#3C444D]">
-                <IoDocumentText className="h-16 w-16 text-default-400" />
+          !loading && ( // ✅ biar gak muncul bareng spinner
+            <div className="flex flex-col items-center justify-center py-24">
+              <div className="text-center max-w-md">
+                <div className="bg-default-100 rounded-full p-8 mb-8 inline-block border border-[#3C444D]">
+                  <IoDocumentText className="h-16 w-16 text-default-400" />
+                </div>
+                <h3 className="text-2xl font-semibold text-foreground mb-4">
+                  No notes found
+                </h3>
+                <p className="text-default-500 mb-8 text-lg leading-relaxed">
+                  {searchQuery
+                    ? "Try adjusting your search terms"
+                    : "Get started by creating your first note"}
+                </p>
+                <Button
+                  color="primary"
+                  size="lg"
+                  startContent={<IoAdd className="h-5 w-5" />}
+                  className="font-semibold shadow-lg border border-[#3C444D] px-8 py-3 rounded-xl"
+                  variant="solid"
+                  onPress={() => navigate("/create-notes")}
+                >
+                  Create Your First Note
+                </Button>
               </div>
-              <h3 className="text-2xl font-semibold text-foreground mb-4">
-                No notes found
-              </h3>
-              <p className="text-default-500 mb-8 text-lg leading-relaxed">
-                {searchQuery
-                  ? "Try adjusting your search terms"
-                  : "Get started by creating your first note"}
-              </p>
-              <Button
-                color="primary"
-                size="lg"
-                startContent={<IoAdd className="h-5 w-5" />}
-                className="font-semibold shadow-lg border border-[#3C444D] px-8 py-3 rounded-xl"
-                variant="solid"
-              >
-                Create Your First Note
-              </Button>
             </div>
-          </div>
+          )
         )}
 
-        {/* Debug info - remove this in production */}
+        {/* Debug info */}
         <div className="fixed bottom-4 right-4 bg-black text-white p-2 rounded text-xs">
           Modal Open: {isShareModalOpen ? "Yes" : "No"}
           {selectedNoteId && ` | Note ID: ${selectedNoteId}`}
         </div>
       </div>
 
-      {/* Modal Component */}
+      {/* Modal */}
       <ShareReadNoteModal
         isOpen={isShareModalOpen}
         onClose={handleCloseModal}
         onSave={handleSaveSharedUsers}
         noteId={selectedNoteId}
+      />
+
+      <ShareEditNoteModal
+        isOpen={isShareEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSave={handleSaveSharedUsersEdit}
+        noteId={selectedNoteId}
+      />
+
+      <DeleteNoteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
       />
     </DashboardLayout>
   );

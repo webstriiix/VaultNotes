@@ -1,4 +1,4 @@
-import { useInternetIdentity } from "ic-use-internet-identity";
+import { LoginButton } from "./LoginButton";
 
 export default function HeroSection() {
   const { login, identity, isLoggingIn } = useInternetIdentity();
@@ -25,15 +25,12 @@ export default function HeroSection() {
           Securely store, manage, and collaborate on your notes using Web3
           technology.
           <br />
-          Sign up easily using Internet Identity (Web3 Credential). Create, edit, and share encrypted
-          notes anytime, anywhere.
+          Sign up easily using Internet Identity (Web3 Credential). Create,
+          edit, and share encrypted notes anytime, anywhere.
         </p>
-        <button
-          onClick={login}
-          disabled={disabled}
-          className="mt-6 bg-gradient-to-r from-[#FB928E] to-[#6F41FF] text-white px-6 py-3 rounded-2xl shadow-lg hover:opacity-90 text-base md:text-lg flex items-center justify-center mx-auto">
-          {text}
-        </button>
+        <div className="mt-10 -mb-20">
+          <LoginButton loginText="Get Started" />
+        </div>
       </div>
     </section>
   );

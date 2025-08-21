@@ -4,7 +4,7 @@ export default function NotFound() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0D1117] px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center">
         <h1 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#FB928E] to-[#6F41FF] bg-clip-text text-transparent">
           404
