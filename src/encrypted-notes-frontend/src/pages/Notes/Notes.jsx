@@ -201,7 +201,7 @@ const Notes = () => {
             startContent={<IoAdd className="h-5 w-5" />}
             className="font-semibold shadow-lg border border-[#3C444D] rounded-xl"
             variant="solid"
-            onPress={() => navigate("/create-notes")}
+            onPress={() => navigate("/create-note")}
           >
             New Note
           </Button>
@@ -254,6 +254,7 @@ const Notes = () => {
               <Card
                 key={note.id}
                 className="border border-[#3C444D] rounded-2xl hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+                onClick={() => navigate(`/update-note/${note.id}`)}
               >
                 <CardHeader className="pb-3 pt-6 px-6">
                   <div className="flex justify-between items-start w-full">
@@ -376,7 +377,7 @@ const Notes = () => {
                   startContent={<IoAdd className="h-5 w-5" />}
                   className="font-semibold shadow-lg border border-[#3C444D] px-8 py-3 rounded-xl"
                   variant="solid"
-                  onPress={() => navigate("/create-notes")}
+                  onPress={() => navigate("/create-note")}
                 >
                   Create Your First Note
                 </Button>

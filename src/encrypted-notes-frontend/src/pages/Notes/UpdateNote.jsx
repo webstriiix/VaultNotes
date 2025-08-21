@@ -21,7 +21,7 @@ import {
   IoPricetag,
   IoSave,
 } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
 import { toast } from "react-toastify"; // ✅ ditambahkan
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
@@ -31,11 +31,14 @@ import { CryptoService } from "../../utils/encryption";
 const UpdateNote = () => {
   const [title, setTitle] = useState("");
   const navigate = useNavigate();
+  const { id } = useParams(); // ✅ Get note ID from URL params
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState("");
   const [loading, setLoading] = useState(false); // ✅ untuk tombol
+  const [fetchingData, setFetchingData] = useState(true); // ✅ untuk loading fetch data
+  const [noteData, setNoteData] = useState(null); // ✅ untuk menyimpan data note yang akan diupdate
   const { identity } = useInternetIdentity();
 
   // Predefined categories
@@ -51,10 +54,87 @@ const UpdateNote = () => {
   useEffect(() => {
     if (identity) {
       console.log("Principal:", identity.getPrincipal().toText());
+      fetchNoteData(); // ✅ Fetch note data when identity is available
     } else {
       console.log("No identity (anonymous)");
     }
-  }, [identity]);
+  }, [identity, id]);
+
+  // ✅ Function to fetch note data and decrypt it
+  const fetchNoteData = async () => {
+    if (!identity || identity.getPrincipal().isAnonymous()) {
+      toast.error("You must log in first.");
+      navigate("/notes");
+      return;
+    }
+
+    if (!id) {
+      toast.error("Note ID not provided.");
+      navigate("/notes");
+      return;
+    }
+
+    setFetchingData(true);
+    try {
+      Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
+      
+      console.log(`Fetching note with ID: ${id}...`);
+      const noteId = BigInt(id);
+      
+      // ✅ Use the new get_note function instead of read_notes
+      const noteResult = await encrypted_notes_backend.get_note(noteId);
+      
+      if (!noteResult || noteResult.length === 0) {
+        toast.error("Note not found or you don't have access to it.");
+        navigate("/notes");
+        return;
+      }
+
+      const foundNote = noteResult[0]; // Extract note from Optional result
+
+      // Check if user can edit this note
+      const userPrincipal = identity.getPrincipal();
+      const canEdit = foundNote.owner.compareTo(userPrincipal) === 'eq' || 
+                     foundNote.shared_edit.some(p => p.compareTo(userPrincipal) === 'eq');
+      
+      if (!canEdit) {
+        toast.error("You don't have permission to edit this note.");
+        navigate("/notes");
+        return;
+      }
+
+      setNoteData(foundNote);
+
+      // Decrypt the note content
+      if (foundNote.encrypted) {
+        console.log("Decrypting note content...");
+        const cryptoService = new CryptoService(encrypted_notes_backend, identity);
+        const owner = foundNote.owner.toText();
+        const decryptedData = await cryptoService.decryptWithNoteKey(
+          noteId,
+          owner,
+          foundNote.encrypted
+        );
+
+        const noteContent = JSON.parse(decryptedData);
+        
+        // Populate form fields with decrypted data
+        setTitle(noteContent.title || "");
+        setContent(noteContent.content || "");
+        setCategory(noteContent.category || "");
+        setTags(noteContent.tags || []);
+        
+        console.log("Note data loaded successfully:", noteContent);
+        toast.success("Note loaded successfully!");
+      }
+    } catch (err) {
+      console.error("❌ Failed to fetch note:", err);
+      toast.error("Failed to load note: " + (err.message || err));
+      navigate("/notes");
+    } finally {
+      setFetchingData(false);
+    }
+  };
 
   // Suggested tags
   const suggestedTags = [
@@ -90,6 +170,11 @@ const UpdateNote = () => {
       return;
     }
 
+    if (!noteData) {
+      toast.error("No note data available to update.");
+      return;
+    }
+
     // ✅ Validasi input
     if (!title.trim()) {
       toast.error("Note title is required!");
@@ -112,49 +197,41 @@ const UpdateNote = () => {
     try {
       Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
 
-      // Prepare note metadata
-      const noteData = {
+      // Prepare updated note metadata
+      const updatedNoteData = {
         title: title.trim(),
         content: content.trim(),
         category: category || "Personal",
         tags,
-        updatedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: noteData.createdAt || new Date().toISOString(), // Keep original created date
+        updatedAt: new Date().toISOString(), // Update modified date
       };
-      const plaintext = JSON.stringify(noteData);
+      const plaintext = JSON.stringify(updatedNoteData);
 
-      console.log("[1/4] Creating empty note on-chain...");
-      const noteIdRaw = await encrypted_notes_backend.update_note("");
-      const noteId = BigInt(noteIdRaw);
-
-      console.log("[2/4] Encrypting note locally...");
+      console.log("[1/3] Encrypting updated note locally...");
       const cryptoService = new CryptoService(
         encrypted_notes_backend,
         identity
       );
-      const owner = identity.getPrincipal().toText();
+      const owner = noteData.owner.toText();
+      const noteId = noteData.id;
       const encryptedBase64 = await cryptoService.encryptWithNoteKey(
         noteId,
         owner,
         plaintext
       );
 
-      console.log("[3/4] Updating note on-chain with ciphertext...");
+      console.log("[2/3] Updating note on-chain with new ciphertext...");
       await encrypted_notes_backend.update_note(noteId, encryptedBase64);
 
-      console.log("[4/4] Done. Note saved on-chain.");
-      toast.success("Note saved successfully");
+      console.log("[3/3] Done. Note updated successfully.");
+      toast.success("Note updated successfully");
 
-      // Reset form
-      setTitle("");
-      setContent("");
-      setCategory("");
-      setTags([]);
-      setNewTag("");
+      // Navigate back to notes list
       navigate("/notes");
     } catch (err) {
-      console.error("❌ Failed to save note:", err);
-      toast.error("Failed to save note: " + (err.message || err));
+      console.error("❌ Failed to update note:", err);
+      toast.error("Failed to update note: " + (err.message || err));
     } finally {
       setLoading(false);
     }
@@ -167,13 +244,32 @@ const UpdateNote = () => {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-background">
+        {/* ✅ Loading overlay for saving */}
         {loading && (
           <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div className="flex flex-col items-center gap-3">
-              <ClipLoader color="#FFFFF" size={50} />
+              <ClipLoader color="#FFFFFF" size={50} />
+              <p className="text-white text-lg">Updating note...</p>
             </div>
           </div>
         )}
+
+        {/* ✅ Loading state while fetching note data */}
+        {fetchingData ? (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <ClipLoader color="#0066FF" size={60} />
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
+                  Loading Note
+                </h2>
+                <p className="text-default-500">
+                  Fetching and decrypting note data...
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -183,7 +279,7 @@ const UpdateNote = () => {
                 variant="bordered"
                 size="lg"
                 className="border border-[#3C444D] shadow-sm hover:shadow-md rounded-xl"
-                disabled={loading}
+                disabled={loading || fetchingData} // ✅ disable while loading or fetching
                 onPress={() => navigate(-1)}
               >
                 <IoArrowBack className="h-5 w-5" />
@@ -203,11 +299,11 @@ const UpdateNote = () => {
                 size="lg"
                 startContent={<IoSave className="h-5 w-5" />}
                 onPress={handleSave}
-                disabled={loading} // ✅ disable tombol saat loading
+                disabled={loading || fetchingData} // ✅ disable tombol saat loading atau fetching
                 className="font-semibold shadow-lg rounded-xl border border-[#3C444D] px-6 sm:px-8"
                 variant="solid"
               >
-                {loading ? "Saving..." : "Save Note"}
+                {loading ? "Updating..." : "Update Note"}
               </Button>
             </div>
           </div>
@@ -238,6 +334,7 @@ const UpdateNote = () => {
                         onChange={(e) => setTitle(e.target.value)}
                         size="lg"
                         variant="bordered"
+                        disabled={fetchingData} // ✅ disable while fetching
                         classNames={{
                           input: "text-base sm:text-lg font-medium",
                           inputWrapper:
@@ -258,6 +355,7 @@ const UpdateNote = () => {
                         variant="bordered"
                         minRows={8}
                         maxRows={16}
+                        disabled={fetchingData} // ✅ disable while fetching
                         classNames={{
                           input: "text-sm sm:text-base leading-relaxed",
                           inputWrapper: "border-[#3C444D] shadow-sm rounded-xl",
@@ -296,6 +394,7 @@ const UpdateNote = () => {
                         }}
                         size="lg"
                         variant="bordered"
+                        disabled={fetchingData} // ✅ disable while fetching
                         classNames={{
                           trigger:
                             "pl-4 pr-10 border-[#3C444D] shadow-sm rounded-xl h-12 sm:h-14",
@@ -342,6 +441,7 @@ const UpdateNote = () => {
                           onKeyDown={handleKeyPress}
                           size="md"
                           variant="bordered"
+                          disabled={fetchingData} // ✅ disable while fetching
                           classNames={{
                             inputWrapper:
                               "border-[#3C444D] shadow-sm rounded-xl h-12",
@@ -354,7 +454,7 @@ const UpdateNote = () => {
                           variant="solid"
                           size="lg"
                           onClick={() => handleAddTag()}
-                          isDisabled={!newTag.trim()}
+                          isDisabled={!newTag.trim() || fetchingData} // ✅ disable while fetching
                           className="shadow-sm rounded-xl h-12 w-12 flex-shrink-0"
                         >
                           <IoAdd className="h-5 w-5" />
@@ -484,6 +584,7 @@ const UpdateNote = () => {
             </div>
           </div>
         </div>
+        )} {/* ✅ Close the fetchingData conditional */}
       </div>
     </DashboardLayout>
   );

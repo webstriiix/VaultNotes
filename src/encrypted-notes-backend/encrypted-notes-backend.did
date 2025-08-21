@@ -31,6 +31,7 @@ service : {
   get_registered_users : () -> (vec UserProfile) query;
   whoami: () -> (principal) query;
   create_note : (text) -> (nat);
+  get_note : (nat) -> (opt Note) query;
   delete_note : (nat) -> ();
   encrypted_symmetric_key_for_note : (nat, blob) -> (text);
   read_notes : () -> (vec Note);

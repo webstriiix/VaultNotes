@@ -99,6 +99,24 @@ pub fn read_notes() -> Vec<Note> {
     })
 }
 
+#[query]
+pub fn get_note(note_id: NoteId) -> Option<Note> {
+    let caller = msg_caller();
+    let _ = assert_not_anonymous(&caller);
+
+    NOTES.with_borrow(|store| {
+        if let Some(note) = store.get(&note_id) {
+            if note.can_read(&caller) {
+                Some(note.clone())
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    })
+}
+
 #[update]
 pub fn update_note(note_id: NoteId, new_encrypted: String) {
     let caller = msg_caller();
