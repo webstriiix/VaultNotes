@@ -39,7 +39,6 @@ const Notes = () => {
   const { identity } = useInternetIdentity();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedNoteId, setSelectedNoteId] = useState(null);
-  const [sharedUsers, setSharedUsers] = useState([]);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -56,10 +55,6 @@ const Notes = () => {
     setSelectedNoteId(null);
   };
 
-  const handleSaveSharedUsersEdit = (users) => {
-    setSharedUsers(users);
-    handleCloseEditModal();
-  };
 
   const handleDeleteNote = (noteId) => {
     setDeleteNoteId(noteId);
@@ -100,7 +95,7 @@ const Notes = () => {
             try {
               const decryptedContent = await cryptoService.decryptWithNoteKey(
                 n.id,
-                identity.getPrincipal(),
+                n.owner,
                 n.encrypted
               );
               const parsed = JSON.parse(decryptedContent);
@@ -174,10 +169,6 @@ const Notes = () => {
     setSelectedNoteId(null);
   };
 
-  const handleSaveSharedUsers = (users) => {
-    setSharedUsers(users);
-    handleCloseModal();
-  };
 
   return (
     <DashboardLayout>
@@ -424,14 +415,12 @@ const Notes = () => {
       <ShareReadNoteModal
         isOpen={isShareModalOpen}
         onClose={handleCloseModal}
-        onSave={handleSaveSharedUsers}
         noteId={selectedNoteId}
       />
 
       <ShareEditNoteModal
         isOpen={isShareEditModalOpen}
         onClose={handleCloseEditModal}
-        onSave={handleSaveSharedUsersEdit}
         noteId={selectedNoteId}
       />
 

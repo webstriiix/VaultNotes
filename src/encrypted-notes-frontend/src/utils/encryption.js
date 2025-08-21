@@ -60,54 +60,54 @@ export class CryptoService {
     }
 
     // --- FETCH OR DERIVE NOTE KEY ---
-   async getOrFetchNoteKey(note_id, owner) {
-    console.log(`Deriving new note key for note_id=${note_id}, owner=${owner}`);
+    async getOrFetchNoteKey(note_id, owner) {
+        console.log(`Deriving new note key for note_id=${note_id}, owner=${owner}`);
 
-    // Ensure identity is used for this actor
-    Actor.agentOf(this.actor).replaceIdentity(this.identity);
+        // Ensure identity is used for this actor
+        Actor.agentOf(this.actor).replaceIdentity(this.identity);
 
-    try {
-        // 1. Ephemeral transport secret key
-        const tsk = vetkd.TransportSecretKey.random();
+        try {
+            // 1. Ephemeral transport secret key
+            const tsk = vetkd.TransportSecretKey.random();
 
-        // 2. Ask backend for encrypted symmetric key
-        const ek_hex = await this.actor.encrypted_symmetric_key_for_note(
-            BigInt(note_id),
-            Array.from(tsk.publicKeyBytes())
-        );
-        const encryptedVetKey = vetkd.EncryptedVetKey.deserialize(hexDecode(ek_hex));
+            // 2. Ask backend for encrypted symmetric key
+            const ek_hex = await this.actor.encrypted_symmetric_key_for_note(
+                BigInt(note_id),
+                Array.from(tsk.publicKeyBytes())
+            );
+            const encryptedVetKey = vetkd.EncryptedVetKey.deserialize(hexDecode(ek_hex));
 
-        // 3. Ask backend for verification key
-        const dpk_hex = await this.actor.symmetric_key_verification_key_for_note();
-        const dpk = vetkd.DerivedPublicKey.deserialize(hexDecode(dpk_hex));
+            // 3. Ask backend for verification key
+            const dpk_hex = await this.actor.symmetric_key_verification_key_for_note();
+            const dpk = vetkd.DerivedPublicKey.deserialize(hexDecode(dpk_hex));
 
-        // 4. Build input: note_id (128-bit BE) + owner principal raw bytes
-        const note_id_bytes = bigintTo128BitBigEndianUint8Array(BigInt(note_id));
+            // 4. Build input: note_id (128-bit BE) + owner principal raw bytes
+            const note_id_bytes = bigintTo128BitBigEndianUint8Array(BigInt(note_id));
 
-        // ensure we always pass raw Principal bytes
-        const owner_principal = Principal.fromText(
-            typeof owner === "string" ? owner : owner.toText()
-        );
-        const owner_bytes = owner_principal.toUint8Array();
+            // ensure we always pass raw Principal bytes
+            const owner_principal = Principal.fromText(
+                typeof owner === "string" ? owner : owner.toText()
+            );
+            const owner_bytes = owner_principal.toUint8Array();
 
-        const input = new Uint8Array(note_id_bytes.length + owner_bytes.length);
-        input.set(note_id_bytes, 0);
-        input.set(owner_bytes, note_id_bytes.length);
+            const input = new Uint8Array(note_id_bytes.length + owner_bytes.length);
+            input.set(note_id_bytes, 0);
+            input.set(owner_bytes, note_id_bytes.length);
 
-        // 5. Decrypt & verify
-        const vetKey = encryptedVetKey.decryptAndVerify(tsk, dpk, input);
+            // 5. Decrypt & verify
+            const vetKey = encryptedVetKey.decryptAndVerify(tsk, dpk, input);
 
-        // 6. Derive AES-GCM key
-        const derivedMaterial = await vetKey.asDerivedKeyMaterial();
-        const noteKey = await derivedMaterial.deriveAesGcmCryptoKey("note-key");
+            // 6. Derive AES-GCM key
+            const derivedMaterial = await vetKey.asDerivedKeyMaterial();
+            const noteKey = await derivedMaterial.deriveAesGcmCryptoKey("note-key");
 
-        console.log("Note key derived successfully ✅");
-        return noteKey;
-    } catch (err) {
-        console.error("Failed to fetch/derive note key:", err);
-        throw new Error("Invalid VetKey / key derivation failed");
+            console.log("Note key derived successfully ✅");
+            return noteKey;
+        } catch (err) {
+            console.error("Failed to fetch/derive note key:", err);
+            throw new Error("Invalid VetKey / key derivation failed");
+        }
     }
-}
 }
 
 // --- HELPERS ---
