@@ -28,7 +28,7 @@ import { encrypted_notes_backend } from "../../../../declarations/encrypted-note
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
 
-const CreateNotes = () => {
+const CreateNote = () => {
   const [title, setTitle] = useState("");
   const navigate = useNavigate();
   const [content, setContent] = useState("");
@@ -171,7 +171,6 @@ const CreateNotes = () => {
           <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <ClipLoader color="#FFFFF" size={50} />
-              <p className="text-white font-medium text-lg">Saving note...</p>
             </div>
           </div>
         )}
@@ -490,4 +489,4 @@ const CreateNotes = () => {
   );
 };
 
-export default CreateNotes;
+export default CreateNote;

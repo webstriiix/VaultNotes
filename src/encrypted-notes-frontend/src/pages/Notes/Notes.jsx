@@ -27,6 +27,8 @@ import ClipLoader from "react-spinners/ClipLoader"; // ✅ spinner
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
+import DeleteNoteModal from "./DeleteNoteModal";
+import ShareEditNoteModal from "./ShareEditNoteModal";
 import ShareReadNoteModal from "./ShareReadNoteModal";
 
 const Notes = () => {
@@ -38,7 +40,44 @@ const Notes = () => {
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [sharedUsers, setSharedUsers] = useState([]);
   const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ loading state
+  const [loading, setLoading] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteNoteId, setDeleteNoteId] = useState(null);
+  const [isShareEditModalOpen, setIsShareEditModalOpen] = useState(false);
+
+  const handleShareEditNote = (noteId) => {
+    setSelectedNoteId(noteId);
+    setIsShareEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsShareEditModalOpen(false);
+    setSelectedNoteId(null);
+  };
+
+  const handleSaveSharedUsersEdit = (users) => {
+    setSharedUsers(users);
+    handleCloseEditModal();
+  };
+
+  const handleDeleteNote = (noteId) => {
+    setDeleteNoteId(noteId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const actor = encrypted_notes_backend;
+      Actor.agentOf(actor).replaceIdentity(identity);
+      await actor.delete_note(deleteNoteId); // asumsi backend ada method delete_note(id)
+      setNotes((prev) => prev.filter((n) => n.id !== deleteNoteId));
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setDeleteNoteId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -247,7 +286,12 @@ const Notes = () => {
                           base: "bg-content1 hover:bg-default-100 data-[hover=true]:bg-default-100 rounded-xl",
                         }}
                       >
-                        <DropdownItem key="edit">Edit</DropdownItem>
+                        <DropdownItem
+                          key="edit"
+                          onPress={() => navigate(`/update-note/${note.id}`)}
+                        >
+                          Edit
+                        </DropdownItem>
                         <DropdownItem
                           key="share-readonly"
                           onPress={() => handleShareNote(note.id)}
@@ -256,7 +300,7 @@ const Notes = () => {
                         </DropdownItem>
                         <DropdownItem
                           key="share-edit"
-                          onPress={() => alert("Share with edit access")}
+                          onPress={() => handleShareEditNote(note.id)}
                         >
                           Share with Edit Access
                         </DropdownItem>
@@ -264,6 +308,7 @@ const Notes = () => {
                           key="delete"
                           className="text-danger"
                           color="danger"
+                          onPress={() => handleDeleteNote(note.id)}
                         >
                           Delete
                         </DropdownItem>
@@ -353,6 +398,19 @@ const Notes = () => {
         onClose={handleCloseModal}
         onSave={handleSaveSharedUsers}
         noteId={selectedNoteId}
+      />
+
+      <ShareEditNoteModal
+        isOpen={isShareEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSave={handleSaveSharedUsersEdit}
+        noteId={selectedNoteId}
+      />
+
+      <DeleteNoteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
       />
     </DashboardLayout>
   );

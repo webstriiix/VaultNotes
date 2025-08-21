@@ -12,8 +12,9 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
-import CreateNotes from "./pages/Notes/CreateNotes";
+import CreateNote from "./pages/Notes/CreateNote";
 import Notes from "./pages/Notes/Notes";
+import UpdateNote from "./pages/Notes/UpdateNote";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 
@@ -46,10 +47,18 @@ function App() {
             }
           />
           <Route
-            path="/create-notes"
+            path="/create-note"
             element={
               <ProtectedRoute>
-                <CreateNotes />
+                <CreateNote />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/update-note/:id"
+            element={
+              <ProtectedRoute>
+                <UpdateNote />
               </ProtectedRoute>
             }
           />
