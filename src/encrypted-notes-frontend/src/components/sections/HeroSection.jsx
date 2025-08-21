@@ -1,6 +1,16 @@
 import { LoginButton } from "./LoginButton";
+import { useInternetIdentity } from "ic-use-internet-identity";
 
 export default function HeroSection() {
+  const { login, identity, isLoggingIn } = useInternetIdentity();
+  
+  const disabled = isLoggingIn || !!identity;
+  const text = isLoggingIn
+    ? "Initializing..."
+    : identity
+    ? "Already Logged in"
+    : "Get Started";
+
   return (
     <section
       id="home"

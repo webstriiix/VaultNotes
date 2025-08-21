@@ -10,12 +10,28 @@ type UserProfile = record {
   username : text;
   email : text;
 };
+
+type SummaryRequest = record {
+  text : text;
+  content_type : opt text;
+};
+
+type SummaryResponse = record {
+  summary : text;
+  success : bool;
+  processing_time : float64;
+  compression_ratio : float64;
+  method : text;
+  error : opt text;
+};
+
 service : {
   register_user : (text, text) -> ();
   get_profile : (principal) -> (opt UserProfile) query;
   get_registered_users : () -> (vec UserProfile) query;
   whoami: () -> (principal) query;
   create_note : (text) -> (nat);
+  get_note : (nat) -> (opt Note) query;
   delete_note : (nat) -> ();
   encrypted_symmetric_key_for_note : (nat, blob) -> (text);
   read_notes : () -> (vec Note);
@@ -25,4 +41,6 @@ service : {
   unshare_note_edit : (nat, principal) -> ();
   unshare_note_read : (nat, principal) -> ();
   update_note : (nat, text) -> ();
+  ai_summarize : (SummaryRequest) -> (SummaryResponse);
+  ai_health_check : () -> (text) query;
 }

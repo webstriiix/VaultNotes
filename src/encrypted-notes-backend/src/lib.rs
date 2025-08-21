@@ -1,6 +1,7 @@
 mod helpers;
 mod storage;
 mod types;
+mod ai_service;
 
 use candid::Principal;
 use ic_cdk::api::msg_caller;
@@ -16,6 +17,7 @@ use types::UserProfile;
 use crate::helpers::{assert_not_anonymous, get_next_id};
 use crate::storage::NOTES;
 use crate::types::{Note, NoteId};
+use crate::ai_service::{SummaryRequest, SummaryResponse};
 
 const MAX_NOTE_SIZE: usize = 1024;
 
@@ -94,6 +96,24 @@ pub fn read_notes() -> Vec<Note> {
             .filter(|(_, note)| note.owner == caller || note.shared_read.contains(&caller))
             .map(|(_, note)| note.clone())
             .collect()
+    })
+}
+
+#[query]
+pub fn get_note(note_id: NoteId) -> Option<Note> {
+    let caller = msg_caller();
+    let _ = assert_not_anonymous(&caller);
+
+    NOTES.with_borrow(|store| {
+        if let Some(note) = store.get(&note_id) {
+            if note.can_read(&caller) {
+                Some(note.clone())
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     })
 }
 
@@ -255,6 +275,17 @@ pub async fn encrypted_symmetric_key_for_note(
         .expect("call to vetkd_derive_key failed");
 
     hex::encode(response.encrypted_key)
+}
+
+// AI Integration Endpoints
+#[update]
+pub fn ai_summarize(request: SummaryRequest) -> SummaryResponse {
+    ai_service::summarize_text(request)
+}
+
+#[ic_cdk::query]
+pub fn ai_health_check() -> String {
+    "AI Service is running...".to_string()
 }
 
 export_candid!();

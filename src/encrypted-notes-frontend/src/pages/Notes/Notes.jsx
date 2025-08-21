@@ -25,6 +25,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader"; // ✅ spinner
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
+import AISummary from "../../components/ai/AISummary"; // ✅ AI Summary component
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
 import DeleteNoteModal from "./DeleteNoteModal";
@@ -123,6 +124,8 @@ const Notes = () => {
           })
         );
         setNotes(decrypted);
+        console.log("📝 Notes loaded:", decrypted.length, "notes");
+        console.log("📝 First note ID:", decrypted[0]?.id, typeof decrypted[0]?.id);
       } catch (err) {
         console.error("Failed to fetch notes:", err);
       } finally {
@@ -201,7 +204,7 @@ const Notes = () => {
             startContent={<IoAdd className="h-5 w-5" />}
             className="font-semibold shadow-lg border border-[#3C444D] rounded-xl"
             variant="solid"
-            onPress={() => navigate("/create-notes")}
+            onPress={() => navigate("/create-note")}
           >
             New Note
           </Button>
@@ -254,6 +257,11 @@ const Notes = () => {
               <Card
                 key={note.id}
                 className="border border-[#3C444D] rounded-2xl hover:scale-[1.02] transition-all duration-200 cursor-pointer"
+                isPressable
+                onPress={() => {
+                  console.log(`Card clicked, navigating to: /update-note/${note.id}`);
+                  navigate(`/update-note/${note.id}`);
+                }}
               >
                 <CardHeader className="pb-3 pt-6 px-6">
                   <div className="flex justify-between items-start w-full">
@@ -275,6 +283,10 @@ const Notes = () => {
                           size="md"
                           variant="bordered"
                           className="border border-[#3C444D] shadow-sm hover:shadow-md rounded-md"
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            console.log("Dropdown button clicked");
+                          }}
                         >
                           <IoEllipsisVertical className="h-5 w-5" />
                         </Button>
@@ -288,7 +300,10 @@ const Notes = () => {
                       >
                         <DropdownItem
                           key="edit"
-                          onPress={() => navigate(`/update-note/${note.id}`)}
+                          onPress={() => {
+                            console.log(`Dropdown Edit clicked for note: ${note.id}`);
+                            navigate(`/update-note/${note.id}`);
+                          }}
                         >
                           Edit
                         </DropdownItem>
@@ -323,6 +338,19 @@ const Notes = () => {
                   <p className="text-default-600 text-sm leading-relaxed line-clamp-4 mb-5">
                     {note.content}
                   </p>
+
+                  {/* ✅ AI Summary Compact - only for longer notes */}
+                  {note.content && note.content.length > 200 && (
+                    <div className="mb-4">
+                      <AISummary
+                        text={note.content}
+                        contentType={note.category || 'general'}
+                        compact={true}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap gap-2 mb-4">
                     {note.tags.slice(0, 3).map((tag) => (
                       <Chip
@@ -376,7 +404,7 @@ const Notes = () => {
                   startContent={<IoAdd className="h-5 w-5" />}
                   className="font-semibold shadow-lg border border-[#3C444D] px-8 py-3 rounded-xl"
                   variant="solid"
-                  onPress={() => navigate("/create-notes")}
+                  onPress={() => navigate("/create-note")}
                 >
                   Create Your First Note
                 </Button>
