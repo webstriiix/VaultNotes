@@ -1,31 +1,7 @@
 # 🔐 VaultNotes
 
 <div align="center">
-  <img src="https://img.sh---
-
-## 🏗️ Technical Architecture
-
-<div align="center">
-  
-```mermaid
-graph TB
-    A[React Frontend] --> B[Internet Identity]
-    A --> C[ICP Canister]
-    C --> D[Rust Backend]
-    C --> E[AI Service]
-    D --> F[Encrypted Storage]
-    E --> G[Note Summaries]
-```
-
-</div>
-
-### 🛠️ **Tech Stack**
-- **🎨 Frontend:** React 19 + Vite + TailwindCSS + HeroUI
-- **⚡ Backend:** Rust → WebAssembly on Internet Computer  
-- **🔐 Authentication:** Internet Identity (Web3 login)
-- **🤖 AI Integration:** Custom on-chain summarization engine
-- **💾 Storage:** Encrypted, decentralized data persistence with vetKD
-- **🔒 Encryption:** Client-side encryption with threshold cryptographyo/badge/Built_with-Internet_Computer-29ABE2?style=for-the-badge&logo=internet-computer&logoColor=white" alt="Built with Internet Computer" />
+  <img src="https://img.shields.io/badge/Built_with-Internet_Computer-29ABE2?style=for-the-badge&logo=internet-computer&logoColor=white" alt="Built with Internet Computer" />
   <img src="https://img.shields.io/badge/Powered_by-AI-FF6B6B?style=for-the-badge&logo=openai&logoColor=white" alt="AI Powered" />
   <img src="https://img.shields.io/badge/Web3-Decentralized-4ECDC4?style=for-the-badge&logo=web3dotjs&logoColor=white" alt="Web3 Decentralized" />
 </div>
