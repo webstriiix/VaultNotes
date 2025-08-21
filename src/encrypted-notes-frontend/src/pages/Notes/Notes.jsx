@@ -123,6 +123,8 @@ const Notes = () => {
           })
         );
         setNotes(decrypted);
+        console.log("📝 Notes loaded:", decrypted.length, "notes");
+        console.log("📝 First note ID:", decrypted[0]?.id, typeof decrypted[0]?.id);
       } catch (err) {
         console.error("Failed to fetch notes:", err);
       } finally {
@@ -254,7 +256,11 @@ const Notes = () => {
               <Card
                 key={note.id}
                 className="border border-[#3C444D] rounded-2xl hover:scale-[1.02] transition-all duration-200 cursor-pointer"
-                onClick={() => navigate(`/update-note/${note.id}`)}
+                isPressable
+                onPress={() => {
+                  console.log(`Card clicked, navigating to: /update-note/${note.id}`);
+                  navigate(`/update-note/${note.id}`);
+                }}
               >
                 <CardHeader className="pb-3 pt-6 px-6">
                   <div className="flex justify-between items-start w-full">
@@ -276,6 +282,10 @@ const Notes = () => {
                           size="md"
                           variant="bordered"
                           className="border border-[#3C444D] shadow-sm hover:shadow-md rounded-md"
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            console.log("Dropdown button clicked");
+                          }}
                         >
                           <IoEllipsisVertical className="h-5 w-5" />
                         </Button>
@@ -289,7 +299,10 @@ const Notes = () => {
                       >
                         <DropdownItem
                           key="edit"
-                          onPress={() => navigate(`/update-note/${note.id}`)}
+                          onPress={() => {
+                            console.log(`Dropdown Edit clicked for note: ${note.id}`);
+                            navigate(`/update-note/${note.id}`);
+                          }}
                         >
                           Edit
                         </DropdownItem>
