@@ -4,6 +4,7 @@ import { useInternetIdentity } from "ic-use-internet-identity";
 import { useEffect, useState } from "react";
 import { IoPerson, IoSave } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import ClipLoader from "react-spinners/ClipLoader";
 import { toast } from "react-toastify";
 import { encrypted_notes_backend } from "../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../components/layouts/DashboardLayout/DashboardLayout";
@@ -14,16 +15,30 @@ const Profile = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [isExistingProfile, setIsExistingProfile] = useState(false); // ✅ cek profile sudah ada atau belum
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!identity) return;
-      const principal = identity.getPrincipal();
-      const existing = await encrypted_notes_backend.get_profile(principal);
-      if (existing) {
-        setUsername(existing.username || "");
-        setEmail(existing.email || "");
+      try {
+        setLoading(true);
+        const principal = identity.getPrincipal();
+        const userProfile = await encrypted_notes_backend.get_profile(
+          principal
+        );
+
+        if (userProfile.length > 0) {
+          const existing = userProfile[0];
+          setUsername(existing.username || "");
+          setEmail(existing.email || "");
+          setIsExistingProfile(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+        toast.error("Failed to load profile data.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchProfile();
@@ -46,19 +61,15 @@ const Profile = () => {
   const handleSave = async () => {
     if (!identity) return;
 
-    // Validasi username
     if (!username?.trim()) {
       toast.error("Username is required");
       return;
     }
-
-    // Validasi email
     if (!email?.trim()) {
       setEmailError("Email is required");
       toast.error("Email is required");
       return;
     }
-
     const isValid = validateEmail(email);
     if (!isValid) {
       toast.error("Invalid email format");
@@ -68,8 +79,10 @@ const Profile = () => {
     setLoading(true);
     try {
       Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
+
       await encrypted_notes_backend.register_user(username, email);
-      toast.success("Profile saved successfully!");
+
+      toast.success(isExistingProfile ? "Profile updated!" : "Profile saved!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Failed to save profile:", error);
@@ -85,17 +98,32 @@ const Profile = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background relative">
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="flex flex-col items-center gap-3">
+              <ClipLoader color="#FFFFFF" size={50} />
+              <p className="text-white font-medium text-lg">
+                Saving profile...
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-1">
-                  Complete Your Profile
+                  {isExistingProfile
+                    ? "Update Your Profile"
+                    : "Complete Your Profile"}
                 </h1>
                 <p className="text-default-500 text-sm sm:text-base lg:text-lg">
-                  Set your username and email
+                  {isExistingProfile
+                    ? "Modify your username and email"
+                    : "Set your username and email"}
                 </p>
               </div>
             </div>
@@ -109,7 +137,11 @@ const Profile = () => {
               className="font-semibold shadow-lg rounded-xl border border-[#3C444D] px-6 sm:px-8"
               variant="solid"
             >
-              {loading ? "Saving..." : "Save Profile"}
+              {loading
+                ? "Saving..."
+                : isExistingProfile
+                ? "Update Profile"
+                : "Save Profile"}
             </Button>
           </div>
 
@@ -156,8 +188,6 @@ const Profile = () => {
                     onChange={(e) => {
                       const val = e.target.value;
                       setEmail(val);
-
-                      // Realtime error only for visual feedback
                       if (val.trim()) {
                         validateEmail(val);
                       } else {

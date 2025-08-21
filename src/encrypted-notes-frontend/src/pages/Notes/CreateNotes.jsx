@@ -12,7 +12,6 @@ import {
 } from "@heroui/react";
 import { useInternetIdentity } from "ic-use-internet-identity";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   IoAdd,
   IoArrowBack,
@@ -22,6 +21,9 @@ import {
   IoPricetag,
   IoSave,
 } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
+import ClipLoader from "react-spinners/ClipLoader";
+import { toast } from "react-toastify"; // ✅ ditambahkan
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
@@ -33,6 +35,7 @@ const CreateNotes = () => {
   const [category, setCategory] = useState("");
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState("");
+  const [loading, setLoading] = useState(false); // ✅ untuk tombol
   const { identity } = useInternetIdentity();
 
   // Predefined categories
@@ -82,26 +85,32 @@ const CreateNotes = () => {
   };
 
   const handleSave = async () => {
-    const actor = encrypted_notes_backend;
-    if (!actor) {
-      alert("Actor not ready yet. Please try again.");
-      return;
-    }
-
     if (!identity || identity.getPrincipal().isAnonymous()) {
-      alert("You must log in first.");
+      toast.error("You must log in first.");
       return;
     }
 
-    if (!title.trim() || !content.trim()) {
-      alert("Title and content are required!");
+    // ✅ Validasi input
+    if (!title.trim()) {
+      toast.error("Note title is required!");
+      return;
+    }
+    if (!content.trim()) {
+      toast.error("Note content is required!");
+      return;
+    }
+    if (!category.trim()) {
+      toast.error("Category must be selected!");
+      return;
+    }
+    if (tags.length === 0) {
+      toast.error("Please add at least one tag!");
       return;
     }
 
-    console.log("Identity Principal:", identity.getPrincipal().toText());
-
+    setLoading(true);
     try {
-      Actor.agentOf(actor).replaceIdentity(identity);
+      Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
 
       // Prepare note metadata
       const noteData = {
@@ -114,36 +123,27 @@ const CreateNotes = () => {
       };
       const plaintext = JSON.stringify(noteData);
 
-      console.log(plaintext);
-
       console.log("[1/4] Creating empty note on-chain...");
-      // Step 1: create empty note to get ID
-      const noteIdRaw = await actor.create_note("");
+      const noteIdRaw = await encrypted_notes_backend.create_note("");
       const noteId = BigInt(noteIdRaw);
-      console.log("✅ Note ID created:", noteId.toString());
 
       console.log("[2/4] Encrypting note locally...");
-      // Step 2: encrypt plaintext using note key
-      const cryptoService = new CryptoService(actor, identity);
+      const cryptoService = new CryptoService(
+        encrypted_notes_backend,
+        identity
+      );
       const owner = identity.getPrincipal().toText();
-
-      console.log("🔑 Fetching/deriving note key...");
       const encryptedBase64 = await cryptoService.encryptWithNoteKey(
         noteId,
         owner,
         plaintext
       );
-      console.log(
-        "✅ Encryption complete. Ciphertext length:",
-        encryptedBase64.length
-      );
 
       console.log("[3/4] Updating note on-chain with ciphertext...");
-      // Step 3: update note on-chain
-      await actor.update_note(noteId, encryptedBase64);
+      await encrypted_notes_backend.update_note(noteId, encryptedBase64);
 
       console.log("[4/4] Done. Note saved on-chain.");
-      alert("Note saved successfully!");
+      toast.success("Note saved successfully");
 
       // Reset form
       setTitle("");
@@ -151,9 +151,12 @@ const CreateNotes = () => {
       setCategory("");
       setTags([]);
       setNewTag("");
+      navigate("/notes");
     } catch (err) {
       console.error("❌ Failed to save note:", err);
-      alert("Failed to save note: " + (err.message || err));
+      toast.error("Failed to save note: " + (err.message || err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -164,6 +167,14 @@ const CreateNotes = () => {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-background">
+        {loading && (
+          <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <ClipLoader color="#FFFFF" size={50} />
+              <p className="text-white font-medium text-lg">Saving note...</p>
+            </div>
+          </div>
+        )}
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -173,6 +184,7 @@ const CreateNotes = () => {
                 variant="bordered"
                 size="lg"
                 className="border border-[#3C444D] shadow-sm hover:shadow-md rounded-xl"
+                disabled={loading}
                 onPress={() => navigate(-1)}
               >
                 <IoArrowBack className="h-5 w-5" />
@@ -192,11 +204,11 @@ const CreateNotes = () => {
                 size="lg"
                 startContent={<IoSave className="h-5 w-5" />}
                 onPress={handleSave}
+                disabled={loading} // ✅ disable tombol saat loading
                 className="font-semibold shadow-lg rounded-xl border border-[#3C444D] px-6 sm:px-8"
                 variant="solid"
               >
-                <span className="hidden sm:inline">Save Note</span>
-                <span className="sm:hidden">Save</span>
+                {loading ? "Saving..." : "Save Note"}
               </Button>
             </div>
           </div>
