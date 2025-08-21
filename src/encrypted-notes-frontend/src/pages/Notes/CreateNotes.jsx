@@ -171,7 +171,6 @@ const CreateNotes = () => {
           <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <ClipLoader color="#FFFFF" size={50} />
-              <p className="text-white font-medium text-lg">Saving note...</p>
             </div>
           </div>
         )}

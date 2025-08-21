@@ -62,7 +62,7 @@ const Dashboard = () => {
           {!profile ? (
             <Card className="border border-[#3C444D] rounded-2xl shadow-sm">
               <CardBody className="p-6">
-                <p className="text-default-500">Loading your profile...</p>
+                <p className="text-default-500">You don't have a profile yet.</p>
               </CardBody>
             </Card>
           ) : (

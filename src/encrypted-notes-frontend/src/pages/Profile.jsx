@@ -103,9 +103,6 @@ const Profile = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
             <div className="flex flex-col items-center gap-3">
               <ClipLoader color="#FFFFFF" size={50} />
-              <p className="text-white font-medium text-lg">
-                Saving profile...
-              </p>
             </div>
           </div>
         )}
