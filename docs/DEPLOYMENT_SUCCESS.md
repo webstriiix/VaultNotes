@@ -5,15 +5,15 @@
 ### 🚀 **Successfully Deployed:**
 
 **Backend Canister (uxrrr-q7777-77774-qaaaq-cai):**
-- ✅ Rust backend dengan Ultra Minimal AI
+- ✅ Rust backend with Ultra Minimal AI
 - ✅ AI summarization endpoints (`ai_summarize`, `ai_health_check`)
-- ✅ Fixed time API issues untuk WASM compatibility
+- ✅ Fixed time API issues for WASM compatibility
 - ✅ Zero external dependencies - works on-chain!
 
 **Frontend Canister (u6s2n-gx777-77774-qaaba-cai):**
-- ✅ React frontend dengan AI components
-- ✅ Built dan deployed ke asset canister
-- ✅ Ready untuk testing
+- ✅ React frontend with AI components
+- ✅ Built and deployed to asset canister
+- ✅ Ready for testing
 
 **Internet Identity (rdmx6-jaaaa-aaaaa-aaadq-cai):**
 - ✅ Authentication service deployed
@@ -26,13 +26,13 @@
 ```
 http://u6s2n-gx777-77774-qaaba-cai.localhost:4943/
 ```
-**Status:** ✅ LIVE - VaultNotes dengan AI integration
+**Status:** ✅ LIVE - VaultNotes with AI integration
 
 ### 🔧 **Backend Candid Interface:**
 ```
 http://127.0.0.1:4943/?canisterId=uzt4z-lp777-77774-qaabq-cai&id=uxrrr-q7777-77774-qaaaq-cai
 ```
-**Status:** ✅ LIVE - Test AI endpoints secara langsung
+**Status:** ✅ LIVE - Test AI endpoints directly
 
 ### 🔐 **Internet Identity:**
 ```
@@ -61,7 +61,7 @@ dfx canister call encrypted-notes-backend ai_summarize '(record {
 ```
 
 **Content Types Supported:**
-- `"meeting"` - Focus pada action items, deadlines
+- `"meeting"` - Focus on action items, deadlines
 - `"technical"` - Highlight systems, implementations  
 - `"research"` - Extract findings, data, conclusions
 - `"general"` - Balanced summarization
@@ -135,19 +135,19 @@ use crate::ai_service::{SummaryRequest, SummaryResponse};
 
 ### 1️⃣ **Frontend Integration Testing:**
 - Open VaultNotes: http://u6s2n-gx777-77774-qaaba-cai.localhost:4943/
-- Create new note dengan > 50 karakter
+- Create new note with > 50 characters
 - Verify AI summary muncul otomatis
 - Test different content types
 
 ### 2️⃣ **Backend AI Testing:**
 - Test via Candid interface
 - Verify response formats
-- Performance testing dengan long texts
+- Performance testing with long texts
 - Error handling validation
 
 ### 3️⃣ **Full User Journey:**
-- Login dengan Internet Identity
-- Create encrypted notes dengan AI summaries
+- Login with Internet Identity
+- Create encrypted notes with AI summaries
 - Save, edit, share notes
 - Verify AI integration seamless
 
@@ -165,12 +165,12 @@ dfx deploy --network ic
 ## 🎉 **ACHIEVEMENT UNLOCKED**
 
 ### ✅ **Ultra Minimal AI Integration:**
-- 🤖 **Smart summarization** dengan content-type awareness
-- ⚡ **Instant processing** tanpa loading delays
+- 🤖 **Smart summarization** with content-type awareness
+- ⚡ **Instant processing** without loading delays
 - 💾 **Zero storage bloat** - no heavy models
 - 🔒 **Privacy-first** - processing on-chain
 - 💰 **Cost efficient** - minimal cycle consumption
-- 🚀 **Production ready** - deployed dan tested
+- 🚀 **Production ready** - deployed and tested
 
 ### 🏆 **Technical Excellence:**
 - ✅ WASM compatibility resolved
@@ -184,8 +184,8 @@ dfx deploy --network ic
 
 ## 📋 **FINAL VERIFICATION CHECKLIST**
 
-- [x] Backend deployed dengan AI endpoints
-- [x] Frontend deployed dengan AI components  
+- [x] Backend deployed with AI endpoints
+- [x] Frontend deployed with AI components  
 - [x] Time API compatibility fixed
 - [x] Iterator type issues resolved
 - [x] Import paths corrected
@@ -195,12 +195,12 @@ dfx deploy --network ic
 
 ### 🎯 **RESULT:**
 
-**VaultNotes sekarang memiliki intelligent AI summarization yang:**
+**VaultNotes now has intelligent AI summarization that:**
 - Works instantly (< 0.001s)
 - Costs virtually nothing (~1K cycles)
 - Provides smart, readable summaries
 - Supports multiple content types
-- Maintains privacy dan security
+- Maintains privacy and security
 - Scales to unlimited users
 
 **MISSION ACCOMPLISHED! 🚀**

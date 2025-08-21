@@ -205,7 +205,7 @@ Per Note with Heavy AI:
 
 ### ✅ **RECOMMENDED: HYBRID APPROACH**
 
-**Ultra Minimal AI adalah OFF-CHAIN processing dengan ON-CHAIN storage:**
+**Ultra Minimal AI is OFF-CHAIN processing with ON-CHAIN storage:**
 
 🎯 **Benefits:**
 - ✅ **99.9% Off-Chain**: AI processing in browser
@@ -252,4 +252,4 @@ dfx deploy --network ic
 # Ongoing cost: +1K cycles per AI summary
 ```
 
-**RESULT: Smart AI features dengan virtually zero cycle impact! 🎉**
+**RESULT: Smart AI features with virtually zero cycle impact! 🎉**
