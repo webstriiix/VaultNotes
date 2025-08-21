@@ -25,6 +25,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader"; // ✅ spinner
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
+import AISummary from "../../components/ai/AISummary"; // ✅ AI Summary component
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
 import DeleteNoteModal from "./DeleteNoteModal";
@@ -337,6 +338,19 @@ const Notes = () => {
                   <p className="text-default-600 text-sm leading-relaxed line-clamp-4 mb-5">
                     {note.content}
                   </p>
+
+                  {/* ✅ AI Summary Compact - only for longer notes */}
+                  {note.content && note.content.length > 200 && (
+                    <div className="mb-4">
+                      <AISummary
+                        text={note.content}
+                        contentType={note.category || 'general'}
+                        compact={true}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap gap-2 mb-4">
                     {note.tags.slice(0, 3).map((tag) => (
                       <Chip
