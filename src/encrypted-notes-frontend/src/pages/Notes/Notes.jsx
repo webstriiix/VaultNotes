@@ -27,8 +27,9 @@ import ClipLoader from "react-spinners/ClipLoader"; // ✅ spinner
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
-import ShareReadNoteModal from "./ShareReadNoteModal";
 import DeleteNoteModal from "./DeleteNoteModal";
+import ShareEditNoteModal from "./ShareEditNoteModal";
+import ShareReadNoteModal from "./ShareReadNoteModal";
 
 const Notes = () => {
   const navigate = useNavigate();
@@ -42,6 +43,22 @@ const Notes = () => {
   const [loading, setLoading] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteNoteId, setDeleteNoteId] = useState(null);
+  const [isShareEditModalOpen, setIsShareEditModalOpen] = useState(false);
+
+  const handleShareEditNote = (noteId) => {
+    setSelectedNoteId(noteId);
+    setIsShareEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsShareEditModalOpen(false);
+    setSelectedNoteId(null);
+  };
+
+  const handleSaveSharedUsersEdit = (users) => {
+    setSharedUsers(users);
+    handleCloseEditModal();
+  };
 
   const handleDeleteNote = (noteId) => {
     setDeleteNoteId(noteId);
@@ -283,7 +300,7 @@ const Notes = () => {
                         </DropdownItem>
                         <DropdownItem
                           key="share-edit"
-                          onPress={() => alert("Share with edit access")}
+                          onPress={() => handleShareEditNote(note.id)}
                         >
                           Share with Edit Access
                         </DropdownItem>
@@ -380,6 +397,13 @@ const Notes = () => {
         isOpen={isShareModalOpen}
         onClose={handleCloseModal}
         onSave={handleSaveSharedUsers}
+        noteId={selectedNoteId}
+      />
+
+      <ShareEditNoteModal
+        isOpen={isShareEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSave={handleSaveSharedUsersEdit}
         noteId={selectedNoteId}
       />
 
