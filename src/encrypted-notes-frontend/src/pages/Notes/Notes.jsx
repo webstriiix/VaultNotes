@@ -28,6 +28,7 @@ import { encrypted_notes_backend } from "../../../../declarations/encrypted-note
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
 import ShareReadNoteModal from "./ShareReadNoteModal";
+import DeleteNoteModal from "./DeleteNoteModal";
 
 const Notes = () => {
   const navigate = useNavigate();
@@ -38,7 +39,28 @@ const Notes = () => {
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [sharedUsers, setSharedUsers] = useState([]);
   const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ loading state
+  const [loading, setLoading] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteNoteId, setDeleteNoteId] = useState(null);
+
+  const handleDeleteNote = (noteId) => {
+    setDeleteNoteId(noteId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const actor = encrypted_notes_backend;
+      Actor.agentOf(actor).replaceIdentity(identity);
+      await actor.delete_note(deleteNoteId); // asumsi backend ada method delete_note(id)
+      setNotes((prev) => prev.filter((n) => n.id !== deleteNoteId));
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setDeleteNoteId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -247,7 +269,12 @@ const Notes = () => {
                           base: "bg-content1 hover:bg-default-100 data-[hover=true]:bg-default-100 rounded-xl",
                         }}
                       >
-                        <DropdownItem key="edit">Edit</DropdownItem>
+                        <DropdownItem
+                          key="edit"
+                          onPress={() => navigate(`/update-note/${note.id}`)}
+                        >
+                          Edit
+                        </DropdownItem>
                         <DropdownItem
                           key="share-readonly"
                           onPress={() => handleShareNote(note.id)}
@@ -264,6 +291,7 @@ const Notes = () => {
                           key="delete"
                           className="text-danger"
                           color="danger"
+                          onPress={() => handleDeleteNote(note.id)}
                         >
                           Delete
                         </DropdownItem>
@@ -353,6 +381,12 @@ const Notes = () => {
         onClose={handleCloseModal}
         onSave={handleSaveSharedUsers}
         noteId={selectedNoteId}
+      />
+
+      <DeleteNoteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
       />
     </DashboardLayout>
   );

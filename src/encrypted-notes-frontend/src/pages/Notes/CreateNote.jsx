@@ -28,7 +28,7 @@ import { encrypted_notes_backend } from "../../../../declarations/encrypted-note
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
 
-const CreateNotes = () => {
+const CreateNote = () => {
   const [title, setTitle] = useState("");
   const navigate = useNavigate();
   const [content, setContent] = useState("");
@@ -489,4 +489,4 @@ const CreateNotes = () => {
   );
 };
 
-export default CreateNotes;
+export default CreateNote;
