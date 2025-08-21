@@ -22,6 +22,7 @@ import {
   IoSave,
 } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import ClipLoader from "react-spinners/ClipLoader";
 import { toast } from "react-toastify"; // ✅ ditambahkan
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
@@ -166,6 +167,14 @@ const CreateNotes = () => {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-background">
+        {loading && (
+          <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <ClipLoader color="#FFFFF" size={50} />
+              <p className="text-white font-medium text-lg">Saving note...</p>
+            </div>
+          </div>
+        )}
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">

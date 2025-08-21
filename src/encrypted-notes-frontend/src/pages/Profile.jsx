@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { encrypted_notes_backend } from "../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../components/layouts/DashboardLayout/DashboardLayout";
+// ⬇️ ganti import spinner
+import ClipLoader from "react-spinners/ClipLoader";
 
 const Profile = () => {
   const { identity } = useInternetIdentity();
@@ -19,11 +21,19 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       if (!identity) return;
-      const principal = identity.getPrincipal();
-      const existing = await encrypted_notes_backend.get_profile(principal);
-      if (existing) {
-        setUsername(existing.username || "");
-        setEmail(existing.email || "");
+      try {
+        setLoading(true);
+        const principal = identity.getPrincipal();
+        const existing = await encrypted_notes_backend.get_profile(principal);
+        if (existing) {
+          setUsername(existing.username || "");
+          setEmail(existing.email || "");
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+        toast.error("Failed to load profile data.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchProfile();
@@ -46,19 +56,15 @@ const Profile = () => {
   const handleSave = async () => {
     if (!identity) return;
 
-    // Validasi username
     if (!username?.trim()) {
       toast.error("Username is required");
       return;
     }
-
-    // Validasi email
     if (!email?.trim()) {
       setEmailError("Email is required");
       toast.error("Email is required");
       return;
     }
-
     const isValid = validateEmail(email);
     if (!isValid) {
       toast.error("Invalid email format");
@@ -85,7 +91,18 @@ const Profile = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background relative">
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="flex flex-col items-center gap-3">
+              <ClipLoader color="#FFFFFF" size={60} />
+              <p className="text-white font-medium text-lg">
+                Saving profile...
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -156,8 +173,6 @@ const Profile = () => {
                     onChange={(e) => {
                       const val = e.target.value;
                       setEmail(val);
-
-                      // Realtime error only for visual feedback
                       if (val.trim()) {
                         validateEmail(val);
                       } else {
