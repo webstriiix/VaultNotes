@@ -7,12 +7,12 @@ export const SIDEBAR = [
     href: "/dashboard",
     icon: <MdDashboard />,
   },
-  {
+ /** {
     key: "profile",
     label: "My Profile",
     href: "/profile",
     icon: <MdPerson />,
-  },
+  }, **/
   {
     key: "notes",
     label: "My Notes",
