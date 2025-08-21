@@ -22,7 +22,7 @@ export const SIDEBAR = [
   {
     key: "create-note",
     label: "New Note",
-    href: "/create-note",
+    href: "/create-notes",
     icon: <MdAddCircle />,
   },
 ];
