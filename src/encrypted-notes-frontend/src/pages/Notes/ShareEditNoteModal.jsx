@@ -49,7 +49,7 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
 
         for (const user of sharedUsers) {
             try {
-                await encrypted_notes_backend.share_note_read(noteId, user.id);
+                await encrypted_notes_backend.share_note_edit(noteId, user.id);
                 alert(`✅ Shared note ${noteId} with ${user.username}`);
             } catch (err) {
                 console.error(`❌ Failed to share note with ${user.username}:`, err);
