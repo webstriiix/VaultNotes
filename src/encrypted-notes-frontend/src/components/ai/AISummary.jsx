@@ -30,12 +30,36 @@ const AISummary = ({
     };
 
     const handleCopy = async () => {
+        if (!summary) return;
+        
         try {
             await navigator.clipboard.writeText(summary);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
-            console.error('Failed to copy:', err);
+            console.error('Clipboard API failed:', err);
+            // Fallback untuk browser yang memblokir Clipboard API
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = summary;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                textarea.setSelectionRange(0, 99999); // For mobile devices
+                
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                if (successful) {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } else {
+                    console.error('Fallback copy failed');
+                }
+            } catch (fallbackErr) {
+                console.error('All copy methods failed:', fallbackErr);
+            }
         }
     };
 
@@ -124,7 +148,7 @@ const AISummary = ({
                             </Chip>
                         </div>
                         <div className="flex gap-1">
-                            <Button
+                            {/* <Button
                                 isIconOnly
                                 size="sm"
                                 variant="light"
@@ -133,12 +157,13 @@ const AISummary = ({
                                 className="text-default-500 hover:text-secondary"
                             >
                                 <IoRefresh className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
                             <Button
                                 isIconOnly
                                 size="sm"
                                 variant="light"
                                 onClick={handleCopy}
+                                disabled={!summary}
                                 className="text-default-500 hover:text-secondary"
                             >
                                 {copied ? (

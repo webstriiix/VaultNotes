@@ -23,9 +23,9 @@ import {
 } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
-import { toast } from "react-toastify"; // ✅ ditambahkan
+import { toast } from "react-toastify";
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
-import AISummary from "../../components/ai/AISummary"; // ✅ AI Summary component
+import AISummary from "../../components/ai/AISummary";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
 
@@ -364,7 +364,7 @@ const UpdateNote = () => {
                       />
                     </div>
 
-                    {/* ✅ AI Summary Section */}
+                    {/* AI Summary Section */}
                     {content && content.length > 100 && (
                       <div className="space-y-2">
                         <AISummary
