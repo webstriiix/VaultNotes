@@ -25,6 +25,65 @@ type SummaryResponse = record {
   error : opt text;
 };
 
+type ContentAnalysisRequest = record {
+  text : text;
+  context : opt text;
+};
+
+type ContentAnalysisResponse = record {
+  content_type : text;
+  language : text;
+  confidence : float64;
+  topics : vec text;
+  sentiment : text;
+  complexity_score : float64;
+  success : bool;
+  processing_time : float64;
+};
+
+type SemanticSearchRequest = record {
+  text_query : text;
+  content_pool : vec text;
+  search_type : text;
+  language : opt text;
+};
+
+type SemanticSearchResponse = record {
+  results : vec SearchResult;
+  suggestions : vec text;
+  success : bool;
+  processing_time : float64;
+};
+
+type SearchResult = record {
+  content_id : text;
+  relevance_score : float64;
+  semantic_similarity : float64;
+  keyword_match_score : float64;
+  context_relevance : float64;
+  snippet : text;
+  highlights : vec text;
+};
+
+type AbstractSummaryRequest = record {
+  text : text;
+  summary_type : text;
+  target_length : opt nat32;
+  language : opt text;
+  style : opt text;
+};
+
+type AbstractSummaryResponse = record {
+  summary : text;
+  original_sentences : vec text;
+  generated_sentences : vec text;
+  key_concepts : vec text;
+  abstraction_level : float64;
+  coherence_score : float64;
+  success : bool;
+  processing_time : float64;
+};
+
 service : {
   register_user : (text, text) -> ();
   get_profile : (principal) -> (opt UserProfile) query;
@@ -42,6 +101,15 @@ service : {
   unshare_note_edit : (nat, principal) -> ();
   unshare_note_read : (nat, principal) -> ();
   update_note : (nat, text) -> ();
+  store_search_index : (text) -> ();
+  get_search_index : () -> (opt text) query;
+  get_search_index_info : () -> (opt nat64) query;
+  delete_search_index : () -> (bool);
   ai_summarize : (SummaryRequest) -> (SummaryResponse);
   ai_health_check : () -> (text) query;
+  
+  // Advanced AI functions
+  analyze_content : (ContentAnalysisRequest) -> (ContentAnalysisResponse);
+  semantic_search : (SemanticSearchRequest) -> (SemanticSearchResponse);
+  generate_abstract_summary : (AbstractSummaryRequest) -> (AbstractSummaryResponse);
 }
