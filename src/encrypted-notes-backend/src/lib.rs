@@ -332,23 +332,39 @@ pub fn ai_summarize(request: SummaryRequest) -> SummaryResponse {
 }
 
 #[update]
-pub fn ai_analyze_content(request: ContentAnalysisRequest) -> ContentAnalysisResponse {
+pub fn analyze_content(request: ContentAnalysisRequest) -> ContentAnalysisResponse {
     ai_service::analyze_content(request)
 }
 
 #[update]
-pub fn ai_semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse {
+pub fn semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse {
     ai_service::semantic_search(request)
 }
 
 #[update]
-pub fn ai_abstract_summary(request: AbstractSummaryRequest) -> AbstractSummaryResponse {
+pub fn generate_abstract_summary(request: AbstractSummaryRequest) -> AbstractSummaryResponse {
     ai_service::generate_abstract_summary(request)
+}
+
+// User Preference Learning Endpoints
+#[update]
+pub fn learn_from_feedback(user_id: String, feedback: ai_service::UserFeedback) -> ai_service::UserPreferences {
+    ai_service::learn_from_user_feedback(user_id, feedback)
+}
+
+#[update]
+pub fn personalized_search(request: ai_service::PersonalizedSearchRequest) -> ai_service::PersonalizedSearchResponse {
+    ai_service::personalized_search(request)
+}
+
+#[query]
+pub fn get_user_insights(user_id: String) -> ai_service::UserPreferences {
+    ai_service::get_user_insights(user_id)
 }
 
 #[ic_cdk::query]
 pub fn ai_health_check() -> String {
-    "Enhanced AI Service with ML features is running...".to_string()
+    "Enhanced AI Service with ML features and user learning is running...".to_string()
 }
 
 export_candid!();

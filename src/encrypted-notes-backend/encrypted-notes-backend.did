@@ -84,6 +84,113 @@ type AbstractSummaryResponse = record {
   processing_time : float64;
 };
 
+type SearchFeedback = record {
+  search_query : text;
+  result_id : text;
+  relevance_score : float64;
+  clicked : bool;
+  time_spent : float64;
+};
+
+type SearchContext = record {
+  timestamp : nat64;
+  session_id : text;
+  previous_queries : vec text;
+  user_location : opt text;
+  device_type : text;
+  search_intent : text;
+};
+
+type UserPreferences = record {
+  user_id : text;
+  search_preferences : SearchPreferences;
+  content_preferences : ContentPreferences;
+  feedback_history : vec SearchFeedback;
+  learning_profile : LearningProfile;
+  last_updated : nat64;
+};
+
+type SearchPreferences = record {
+  preferred_search_mode : text;
+  language_preference : vec text;
+  topic_interests : vec TopicWeight;
+  complexity_preference : float64;
+  result_count_preference : nat32;
+};
+
+type ContentPreferences = record {
+  preferred_content_types : vec text;
+  summary_length_preference : text;
+  summary_style_preference : text;
+  sentiment_filter : opt text;
+};
+
+type TopicWeight = record {
+  topic : text;
+  weight : float64;
+  frequency : nat32;
+};
+
+type LearningProfile = record {
+  search_patterns : vec SearchPattern;
+  content_engagement : vec ContentEngagement;
+  adaptation_score : float64;
+  confidence_level : float64;
+};
+
+type SearchPattern = record {
+  pattern_type : text;
+  pattern_data : text;
+  frequency : float64;
+  effectiveness : float64;
+};
+
+type ContentEngagement = record {
+  content_type : text;
+  engagement_score : float64;
+  interaction_count : nat32;
+  average_dwell_time : float64;
+};
+
+type PersonalizedSearchRequest = record {
+  user_id : text;
+  search_query : text;
+  content_pool : vec text;
+  use_personalization : bool;
+  context : opt SearchContext;
+  override_preferences : opt SearchPreferences;
+};
+
+type PersonalizedSearchResponse = record {
+  results : vec PersonalizedSearchResult;
+  personalization_applied : bool;
+  confidence_score : float64;
+  learning_insights : vec text;
+  suggestions : vec text;
+  success : bool;
+  processing_time : float64;
+};
+
+type PersonalizedSearchResult = record {
+  content_id : text;
+  base_relevance_score : float64;
+  personalized_score : float64;
+  personalization_factors : vec PersonalizationFactor;
+  semantic_similarity : float64;
+  keyword_match_score : float64;
+  context_relevance : float64;
+  snippet : text;
+  highlights : vec text;
+  confidence : float64;
+};
+
+type PersonalizationFactor = record {
+  factor_type : text;
+  weight : float64;
+  contribution : float64;
+  explanation : text;
+};
+
 service : {
   register_user : (text, text) -> ();
   get_profile : (principal) -> (opt UserProfile) query;
@@ -107,9 +214,12 @@ service : {
   delete_search_index : () -> (bool);
   ai_summarize : (SummaryRequest) -> (SummaryResponse);
   ai_health_check : () -> (text) query;
-  
-  // Advanced AI functions
   analyze_content : (ContentAnalysisRequest) -> (ContentAnalysisResponse);
   semantic_search : (SemanticSearchRequest) -> (SemanticSearchResponse);
   generate_abstract_summary : (AbstractSummaryRequest) -> (AbstractSummaryResponse);
+  
+  // User Preference Learning functions
+  learn_from_feedback : (text, SearchFeedback, opt SearchContext) -> (UserPreferences);
+  personalized_search : (PersonalizedSearchRequest) -> (PersonalizedSearchResponse);
+  get_user_insights : (text) -> (UserPreferences) query;
 }
