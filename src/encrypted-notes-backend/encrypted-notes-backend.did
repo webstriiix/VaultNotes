@@ -25,6 +25,172 @@ type SummaryResponse = record {
   error : opt text;
 };
 
+type ContentAnalysisRequest = record {
+  text : text;
+  context : opt text;
+};
+
+type ContentAnalysisResponse = record {
+  content_type : text;
+  language : text;
+  confidence : float64;
+  topics : vec text;
+  sentiment : text;
+  complexity_score : float64;
+  success : bool;
+  processing_time : float64;
+};
+
+type SemanticSearchRequest = record {
+  text_query : text;
+  content_pool : vec text;
+  search_type : text;
+  language : opt text;
+};
+
+type SemanticSearchResponse = record {
+  results : vec SearchResult;
+  suggestions : vec text;
+  success : bool;
+  processing_time : float64;
+};
+
+type SearchResult = record {
+  content_id : text;
+  relevance_score : float64;
+  semantic_similarity : float64;
+  keyword_match_score : float64;
+  context_relevance : float64;
+  snippet : text;
+  highlights : vec text;
+};
+
+type AbstractSummaryRequest = record {
+  text : text;
+  summary_type : text;
+  target_length : opt nat32;
+  language : opt text;
+  style : opt text;
+};
+
+type AbstractSummaryResponse = record {
+  summary : text;
+  original_sentences : vec text;
+  generated_sentences : vec text;
+  key_concepts : vec text;
+  abstraction_level : float64;
+  coherence_score : float64;
+  success : bool;
+  processing_time : float64;
+};
+
+type SearchFeedback = record {
+  search_query : text;
+  result_id : text;
+  relevance_score : float64;
+  clicked : bool;
+  time_spent : float64;
+};
+
+type SearchContext = record {
+  timestamp : nat64;
+  session_id : text;
+  previous_queries : vec text;
+  user_location : opt text;
+  device_type : text;
+  search_intent : text;
+};
+
+type UserPreferences = record {
+  user_id : text;
+  search_preferences : SearchPreferences;
+  content_preferences : ContentPreferences;
+  feedback_history : vec SearchFeedback;
+  learning_profile : LearningProfile;
+  last_updated : nat64;
+};
+
+type SearchPreferences = record {
+  preferred_search_mode : text;
+  language_preference : vec text;
+  topic_interests : vec TopicWeight;
+  complexity_preference : float64;
+  result_count_preference : nat32;
+};
+
+type ContentPreferences = record {
+  preferred_content_types : vec text;
+  summary_length_preference : text;
+  summary_style_preference : text;
+  sentiment_filter : opt text;
+};
+
+type TopicWeight = record {
+  topic : text;
+  weight : float64;
+  frequency : nat32;
+};
+
+type LearningProfile = record {
+  search_patterns : vec SearchPattern;
+  content_engagement : vec ContentEngagement;
+  adaptation_score : float64;
+  confidence_level : float64;
+};
+
+type SearchPattern = record {
+  pattern_type : text;
+  pattern_data : text;
+  frequency : float64;
+  effectiveness : float64;
+};
+
+type ContentEngagement = record {
+  content_type : text;
+  engagement_score : float64;
+  interaction_count : nat32;
+  average_dwell_time : float64;
+};
+
+type PersonalizedSearchRequest = record {
+  user_id : text;
+  search_query : text;
+  content_pool : vec text;
+  use_personalization : bool;
+  context : opt SearchContext;
+  override_preferences : opt SearchPreferences;
+};
+
+type PersonalizedSearchResponse = record {
+  results : vec PersonalizedSearchResult;
+  personalization_applied : bool;
+  confidence_score : float64;
+  learning_insights : vec text;
+  suggestions : vec text;
+  success : bool;
+  processing_time : float64;
+};
+
+type PersonalizedSearchResult = record {
+  content_id : text;
+  base_relevance_score : float64;
+  personalized_score : float64;
+  personalization_factors : vec PersonalizationFactor;
+  semantic_similarity : float64;
+  keyword_match_score : float64;
+  context_relevance : float64;
+  snippet : text;
+  highlights : vec text;
+  confidence : float64;
+};
+
+type PersonalizationFactor = record {
+  factor_type : text;
+  weight : float64;
+  contribution : float64;
+  explanation : text;
+};
+
 service : {
   register_user : (text, text) -> ();
   get_profile : (principal) -> (opt UserProfile) query;
@@ -42,6 +208,18 @@ service : {
   unshare_note_edit : (nat, principal) -> ();
   unshare_note_read : (nat, principal) -> ();
   update_note : (nat, text) -> ();
+  store_search_index : (text) -> ();
+  get_search_index : () -> (opt text) query;
+  get_search_index_info : () -> (opt nat64) query;
+  delete_search_index : () -> (bool);
   ai_summarize : (SummaryRequest) -> (SummaryResponse);
   ai_health_check : () -> (text) query;
+  analyze_content : (ContentAnalysisRequest) -> (ContentAnalysisResponse);
+  semantic_search : (SemanticSearchRequest) -> (SemanticSearchResponse);
+  generate_abstract_summary : (AbstractSummaryRequest) -> (AbstractSummaryResponse);
+  
+  // User Preference Learning functions
+  learn_from_feedback : (text, SearchFeedback, opt SearchContext) -> (UserPreferences);
+  personalized_search : (PersonalizedSearchRequest) -> (PersonalizedSearchResponse);
+  get_user_insights : (text) -> (UserPreferences) query;
 }

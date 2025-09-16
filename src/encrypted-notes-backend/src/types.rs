@@ -94,3 +94,39 @@ impl Storable for UserProfile {
     const BOUND: ic_stable_structures::storable::Bound =
         ic_stable_structures::storable::Bound::Unbounded;
 }
+
+#[derive(Debug, CandidType, Deserialize, Clone)]
+pub struct SearchIndex {
+    pub owner: Principal,
+    pub encrypted_blob: String,
+    pub last_updated: u64,
+}
+
+impl Storable for SearchIndex {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        match candid::Encode!(self) {
+            Ok(bytes) => Cow::Owned(bytes),
+            Err(e) => {
+                ic_cdk::print(format!("Failed to encode SearchIndex: {}", e));
+                Cow::Owned(Vec::new())
+            }
+        }
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        match candid::Decode!(bytes.as_ref(), Self) {
+            Ok(index) => index,
+            Err(e) => {
+                ic_cdk::print(format!("Failed to decode SearchIndex: {}", e));
+                SearchIndex {
+                    owner: Principal::anonymous(),
+                    encrypted_blob: String::new(),
+                    last_updated: 0,
+                }
+            }
+        }
+    }
+
+    const BOUND: ic_stable_structures::storable::Bound =
+        ic_stable_structures::storable::Bound::Unbounded;
+}

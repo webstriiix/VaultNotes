@@ -11,13 +11,13 @@ use ic_cdk::management_canister::{
 };
 use ic_cdk::{export_candid, query, update};
 use ic_stable_structures::Storable;
-use storage::USER_PROFILES;
-use types::UserProfile;
+use storage::{USER_PROFILES, SEARCH_INDICES};
+use types::{UserProfile, SearchIndex};
 
 use crate::helpers::{assert_not_anonymous, get_next_id};
 use crate::storage::NOTES;
 use crate::types::{Note, NoteId};
-use crate::ai_service::{SummaryRequest, SummaryResponse};
+use crate::ai_service::{SummaryRequest, SummaryResponse, ContentAnalysisRequest, ContentAnalysisResponse, SemanticSearchRequest, SemanticSearchResponse, AbstractSummaryRequest, AbstractSummaryResponse};
 
 const MAX_NOTE_SIZE: usize = 1024;
 
@@ -277,15 +277,94 @@ pub async fn encrypted_symmetric_key_for_note(
     hex::encode(response.encrypted_key)
 }
 
+// Search Index Management Endpoints
+
+#[update]
+pub fn store_search_index(encrypted_blob: String) {
+    let caller = msg_caller();
+    let _ = assert_not_anonymous(&caller);
+
+    let search_index = SearchIndex {
+        owner: caller,
+        encrypted_blob,
+        last_updated: ic_cdk::api::time(),
+    };
+
+    SEARCH_INDICES.with(|indices| {
+        indices.borrow_mut().insert(caller, search_index);
+    });
+}
+
+#[query]
+pub fn get_search_index() -> Option<String> {
+    let caller = msg_caller();
+    let _ = assert_not_anonymous(&caller);
+
+    SEARCH_INDICES.with(|indices| {
+        indices.borrow().get(&caller).map(|index| index.encrypted_blob)
+    })
+}
+
+#[query]
+pub fn get_search_index_info() -> Option<u64> {
+    let caller = msg_caller();
+    let _ = assert_not_anonymous(&caller);
+
+    SEARCH_INDICES.with(|indices| {
+        indices.borrow().get(&caller).map(|index| index.last_updated)
+    })
+}
+
+#[update]
+pub fn delete_search_index() -> bool {
+    let caller = msg_caller();
+    let _ = assert_not_anonymous(&caller);
+
+    SEARCH_INDICES.with(|indices| {
+        indices.borrow_mut().remove(&caller).is_some()
+    })
+}
+
 // AI Integration Endpoints
 #[update]
 pub fn ai_summarize(request: SummaryRequest) -> SummaryResponse {
     ai_service::summarize_text(request)
 }
 
+#[update]
+pub fn analyze_content(request: ContentAnalysisRequest) -> ContentAnalysisResponse {
+    ai_service::analyze_content(request)
+}
+
+#[update]
+pub fn semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse {
+    ai_service::semantic_search(request)
+}
+
+#[update]
+pub fn generate_abstract_summary(request: AbstractSummaryRequest) -> AbstractSummaryResponse {
+    ai_service::generate_abstract_summary(request)
+}
+
+// User Preference Learning Endpoints
+#[update]
+pub fn learn_from_feedback(user_id: String, feedback: ai_service::UserFeedback) -> ai_service::UserPreferences {
+    ai_service::learn_from_user_feedback(user_id, feedback)
+}
+
+#[update]
+pub fn personalized_search(request: ai_service::PersonalizedSearchRequest) -> ai_service::PersonalizedSearchResponse {
+    ai_service::personalized_search(request)
+}
+
+#[query]
+pub fn get_user_insights(user_id: String) -> ai_service::UserPreferences {
+    ai_service::get_user_insights(user_id)
+}
+
 #[ic_cdk::query]
 pub fn ai_health_check() -> String {
-    "AI Service is running...".to_string()
+    "Enhanced AI Service with ML features and user learning is running...".to_string()
 }
 
 export_candid!();

@@ -16,6 +16,7 @@ export default defineConfig({
         global: "globalThis",
       },
     },
+    include: ["@dfinity/vetkeys", "@dfinity/agent", "@dfinity/principal", "@dfinity/candid"],
   },
   server: {
     proxy: {
@@ -39,7 +40,7 @@ export default defineConfig({
         replacement: fileURLToPath(new URL("../declarations", import.meta.url)),
       },
     ],
-    dedupe: ["@dfinity/agent"],
+    dedupe: ["@dfinity/agent", "@dfinity/vetkeys", "@dfinity/principal", "@dfinity/candid"],
   },
 });
 

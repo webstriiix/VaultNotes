@@ -30,6 +30,7 @@
     "@dfinity/candid": "3.2.1",
     "@dfinity/identity": "^3.2.1",
     "@dfinity/principal": "^3.2.1",
+    "@dfinity/vetkeys": "^0.4.0",
     "@heroui/react": "^2.8.1",
     "@vitejs/plugin-react": "^4.7.0",
     "clsx": "^2.1.1",
