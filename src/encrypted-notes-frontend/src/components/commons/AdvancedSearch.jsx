@@ -34,7 +34,7 @@ import {
   IoRefresh,
   IoChevronDown
 } from 'react-icons/io5';
-import { useSemanticSearch } from '../../hooks/useSemanticSearch';
+import useSemanticSearch from '../../hooks/useSemanticSearch';
 import { useNavigate } from 'react-router-dom';
 
 const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {

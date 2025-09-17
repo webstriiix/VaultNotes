@@ -33,7 +33,7 @@ import {
   ClockIcon,
   FireIcon
 } from '@heroicons/react/24/outline';
-import { useSemanticSearch } from '../../hooks/useSemanticSearch';
+import useSemanticSearch from '../../hooks/useSemanticSearch';
 
 const AIEnhancedSearch = ({ isOpen, onClose, notes = [] }) => {
   const [searchQuery, setSearchQuery] = useState('');
