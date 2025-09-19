@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader"; // ✅ spinner
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import AISummary from "../../components/ai/AISummary"; // ✅ AI Summary component
+import SearchIntegration from "../../components/commons/SearchIntegration";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
 import { CryptoService } from "../../utils/encryption";
 import DeleteNoteModal from "./DeleteNoteModal";
@@ -72,6 +73,26 @@ const Notes = () => {
     } finally {
       setIsDeleteModalOpen(false);
       setDeleteNoteId(null);
+    }
+  };
+
+  const handleSearchResultSelect = (result) => {
+    // Check if the note exists in current notes
+    const existingNote = notes.find(note => note.id === Number(result.noteId));
+    if (existingNote) {
+      // Scroll to the note or highlight it
+      const noteElement = document.getElementById(`note-${result.noteId}`);
+      if (noteElement) {
+        noteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Add a temporary highlight effect
+        noteElement.classList.add('ring-2', 'ring-blue-400', 'ring-opacity-75');
+        setTimeout(() => {
+          noteElement.classList.remove('ring-2', 'ring-blue-400', 'ring-opacity-75');
+        }, 3000);
+      }
+    } else {
+      // Navigate to update note page if not in current view
+      navigate(`/update-note/${result.noteId}`);
     }
   };
 
@@ -222,6 +243,10 @@ const Notes = () => {
             />
           </div>
           <div className="flex gap-3 flex-wrap">
+            <SearchIntegration 
+              onNoteSelect={handleSearchResultSelect}
+              className="h-14 px-6 rounded-xl"
+            />
             {filterButtons.map((filter) => (
               <Button
                 key={filter.key}
@@ -247,6 +272,7 @@ const Notes = () => {
             {filteredNotes.map((note) => (
               <Card
                 key={note.id}
+                id={`note-${note.id}`}
                 className="border border-[#3C444D] rounded-2xl hover:scale-[1.02] transition-all duration-200 cursor-pointer"
                 isPressable
                 onPress={() => {
