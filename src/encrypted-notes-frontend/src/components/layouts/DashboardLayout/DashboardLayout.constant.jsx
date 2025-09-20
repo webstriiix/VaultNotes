@@ -1,4 +1,4 @@
-import { MdAddCircle, MdNote, MdPerson, MdDashboard } from "react-icons/md";
+import { MdAddCircle, MdNote, MdStore, MdDashboard } from "react-icons/md";
 
 export const SIDEBAR = [
   {
@@ -24,5 +24,11 @@ export const SIDEBAR = [
     label: "New Note",
     href: "/create-note",
     icon: <MdAddCircle />,
+  },
+  {
+    key: "marketplace",
+    label: "Marketplace",
+    href: "/marketplace",
+    icon: <MdStore />,
   },
 ];
