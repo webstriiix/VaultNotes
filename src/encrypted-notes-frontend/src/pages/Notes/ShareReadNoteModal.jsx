@@ -20,6 +20,9 @@ const ShareReadNoteModal = ({ isOpen, onClose, noteId }) => {
     const [sharedUsers, setSharedUsers] = useState([]);
     const { identity } = useInternetIdentity();
 
+    // simpan snapshot daftar user yang sudah shared saat modal dibuka
+    const [originalSharedUsers, setOriginalSharedUsers] = useState([]);
+
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -34,6 +37,8 @@ const ShareReadNoteModal = ({ isOpen, onClose, noteId }) => {
 
         if (isOpen) {
             fetchUsers();
+                // snapshot awal: dipakai buat nentuin user yang dihapus (unshare)
+            setOriginalSharedUsers(sharedUsers);
         }
     }, [isOpen, identity]);
 
@@ -48,13 +53,31 @@ const ShareReadNoteModal = ({ isOpen, onClose, noteId }) => {
 
         Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
 
-        for (const user of sharedUsers) {
-            try {
-                await encrypted_notes_backend.share_note_read(noteId, user.id);
-                alert(`✅ Shared note ${noteId} with ${user.username}`);
-            } catch (err) {
-                console.error(`❌ Failed to share note with ${user.username}:`, err);
-            }
+        // additions: ada di sharedUsers sekarang, tapi TIDAK ada di snapshot awal
+        const additions = sharedUsers.filter(
+        (u) => !originalSharedUsers.some(o => o.id.toText() === u.id.toText())             
+        );
+        // removals: ada di snapshot awal, tapi TIDAK ada di sharedUsers sekarang
+        const removals = originalSharedUsers.filter(
+        (o) => !sharedUsers.some(u => u.id.toText() === o.id.toText())
+        );
+        // jalankan share untuk additions
+        for (const user of additions) {
+        try {
+            await encrypted_notes_backend.share_note_read(noteId, user.id);
+            alert(`✅ Shared note ${noteId} with ${user.username}`);
+        } catch (err) {
+            console.error(`❌ Failed to share (read) for ${user.username}:`, err);
+        }
+        }
+        // jalankan unshare untuk removals
+        for (const user of removals) {
+        try {
+            await encrypted_notes_backend.unshare_note_read(noteId, user.id);
+            alert(`✅ unShared note ${noteId} with ${user.username}`);
+        } catch (err) {
+            console.error(`❌ Failed to unshare (read) for ${user.username}:`, err);
+        }
         }
     };
 

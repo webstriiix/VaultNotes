@@ -20,6 +20,9 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
     const [sharedUsers, setSharedUsers] = useState([]);
     const { identity } = useInternetIdentity();
 
+    // simpan snapshot user yang sudah punya EDIT saat modal dibuka
+    const [originalSharedUsers, setOriginalSharedUsers] = useState([]);
+
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -34,6 +37,8 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
 
         if (isOpen) {
             fetchUsers();
+            // ambil kondisi awal untuk nentuin siapa yang nanti dianggap "di-remove"
+            setOriginalSharedUsers(sharedUsers);
         }
     }, [isOpen, identity]);
 
@@ -47,13 +52,35 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
 
         Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
 
-        for (const user of sharedUsers) {
-            try {
-                await encrypted_notes_backend.share_note_edit(noteId, user.id);
-                alert(`✅ Shared note ${noteId} with ${user.username}`);
-            } catch (err) {
-                console.error(`❌ Failed to share note with ${user.username}:`, err);
-            }
+        // additions: ada di sharedUsers sekarang, tapi TIDAK ada di snapshot awal
+        const additions = sharedUsers.filter(
+        (u) => !originalSharedUsers.some(o => o.id.toText() === u.id.toText())
+        );
+
+
+        // removals: ada di snapshot awal, tapi TIDAK ada di sharedUsers sekarang
+        const removals = originalSharedUsers.filter(
+        (o) => !sharedUsers.some(u => u.id.toText() === o.id.toText())
+        );
+
+        // share EDIT untuk yang baru ditambah
+        for (const user of additions) {
+        try {
+            await encrypted_notes_backend.share_note_edit(noteId, user.id);
+            alert(`✅ Shared note + ${noteId} with ${user.username} can edited`);
+        } catch (err) {
+            console.error(`❌ Failed to share (edit) for ${user.username}:`, err);
+        }
+        }
+
+        // UNshare EDIT untuk yang dihapus chip-nya
+        for (const user of removals) {
+        try {
+            await encrypted_notes_backend.unshare_note_edit(noteId, user.id);
+            alert(`✅ unShared note ${noteId} with ${user.username}`);
+        } catch (err) {
+            console.error(`❌ Failed to unshare (edit) for ${user.username}:`, err);
+        }
         }
     };
 
