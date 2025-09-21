@@ -190,7 +190,7 @@ type PersonalizationFactor = record {
   weight : float64;
   contribution : float64;
   explanation : text;
-}
+};
 
 type NftId = nat;
 

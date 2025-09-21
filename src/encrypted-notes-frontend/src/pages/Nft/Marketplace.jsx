@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { Actor } from "@dfinity/agent";
 import { Button, Card, CardBody, CardHeader, Chip } from "@heroui/react";
+import { useInternetIdentity } from "ic-use-internet-identity";
+import { useEffect, useState } from "react";
 import { IoPricetag } from "react-icons/io5";
 import { toast } from "react-toastify";
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
-import { useInternetIdentity } from "ic-use-internet-identity";
-import { Actor } from "@dfinity/agent";
 
 const Marketplace = () => {
     const [nfts, setNfts] = useState([]);
@@ -78,11 +78,11 @@ const Marketplace = () => {
             <div className="max-w-7xl mx-auto p-6">
                 <h1 className="text-3xl font-bold mb-2">NFT Marketplace</h1>
 
-                {ledgerId && (
+                {/* {ledgerId && (
                     <p className="text-sm text-gray-500 mb-6">
                         💡 Using Ledger: <span className="font-mono">{ledgerId}</span>
                     </p>
-                )}
+                )} */}
 
                 {loading ? (
                     <p className="text-center text-gray-400">Loading NFTs...</p>
