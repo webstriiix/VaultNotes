@@ -5,6 +5,7 @@ type Note = record {
   shared_edit : vec principal;
   shared_read : vec principal;
 };
+
 type UserProfile = record {
   id : principal;
   username : text;
@@ -189,6 +190,22 @@ type PersonalizationFactor = record {
   weight : float64;
   contribution : float64;
   explanation : text;
+}
+
+type NftId = nat;
+
+type Nft = record {
+  id : nat;
+  note_id : nat;
+  owner : principal;
+  title : text;
+  description : text;
+  pointer : text;
+  encrypted : bool;
+  ciphertext_hash_hex : text;
+  listed : bool;
+  price : opt nat64;
+  created_at_nano_second : nat64;
 };
 
 service : {
@@ -222,4 +239,15 @@ service : {
   learn_from_feedback : (text, SearchFeedback, opt SearchContext) -> (UserPreferences);
   personalized_search : (PersonalizedSearchRequest) -> (PersonalizedSearchResponse);
   get_user_insights : (text) -> (UserPreferences) query;
+  mint_note_to_nft : (nat, text, text, text, opt float64) -> (NftId);
+  get_nft : (NftId) -> (opt Nft) query;
+  list_my_nfts : () -> (vec Nft) query;
+  list_nfts_for_sale : () -> (vec Nft) query;
+  update_listing : (NftId, bool, opt nat64) -> ();
+  transfer_nft : (NftId, principal) -> ();
+  owner_of : (NftId) -> (opt principal) query;
+  tokens_of : (principal) -> (vec NftId) query;
+  buy_nft : (NftId) -> (text);
+  get_ledger_id: () -> (text);
+  set_ledger_id: (principal) -> ();
 }
