@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { LoginButton } from "../sections/LoginButton";
+import logo from "/assets/logo.png";
+
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,7 +40,7 @@ export default function Navbar() {
       <div className="container mx-auto flex justify-between items-center py-4 px-6 md:px-10">
         <div className="flex items-center space-x-2">
           <img
-            src="/assets/logo.png"
+            src={logo}
             alt="Encrypted Notes Logo"
             className="w-14 md:w-20"
           />

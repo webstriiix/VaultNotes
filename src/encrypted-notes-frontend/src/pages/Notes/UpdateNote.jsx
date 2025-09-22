@@ -40,8 +40,8 @@ const UpdateNote = () => {
     const [tags, setTags] = useState([]);
     const [newTag, setNewTag] = useState("");
     const [loading, setLoading] = useState(false);
-    const [fetchingData, setFetchingData] = useState(true); 
-    const [noteData, setNoteData] = useState(null); 
+    const [fetchingData, setFetchingData] = useState(true);
+    const [noteData, setNoteData] = useState(null);
     const { identity } = useInternetIdentity();
     const [showMintModal, setShowMintModal] = useState(false);
     const [minting, setMinting] = useState(false);
@@ -170,6 +170,7 @@ const UpdateNote = () => {
         }
 
         try {
+            setLoading(true)
             setMinting(true);
             Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
 
@@ -196,7 +197,7 @@ const UpdateNote = () => {
                     priceOpt.length > 0 ? [BigInt(priceOpt[0] * 100_000_000)] : [] // convert BTC → sats if needed
                 );
 
-                toast.success(`NFT updated successfully! ID: ${existingNft.id}`);
+                toast.success(`NFT updated successfully!`);
             } else {
                 console.log("🆕 No NFT yet, minting new one...");
 
@@ -209,7 +210,7 @@ const UpdateNote = () => {
                     priceOpt
                 );
 
-                toast.success(`NFT minted successfully! ID: ${nftId}`);
+                toast.success(`NFT minted successfully!`);
             }
 
             setShowMintModal(false);
@@ -218,6 +219,7 @@ const UpdateNote = () => {
             toast.error("Failed to mint/update NFT: " + (err.message || err));
         } finally {
             setMinting(false);
+            setLoading(false)
         }
     };
 
@@ -364,7 +366,7 @@ const UpdateNote = () => {
                                     variant="bordered"
                                     size="lg"
                                     className="border border-[#3C444D] shadow-sm hover:shadow-md rounded-xl"
-                                    disabled={loading || fetchingData} 
+                                    disabled={loading || fetchingData}
                                     onPress={() => navigate(-1)}
                                 >
                                     <IoArrowBack className="h-5 w-5" />
@@ -549,7 +551,7 @@ const UpdateNote = () => {
                                                         onKeyDown={handleKeyPress}
                                                         size="md"
                                                         variant="bordered"
-                                                        disabled={fetchingData} 
+                                                        disabled={fetchingData}
                                                         classNames={{
                                                             inputWrapper:
                                                                 "border-[#3C444D] shadow-sm rounded-xl h-12",
@@ -562,7 +564,7 @@ const UpdateNote = () => {
                                                         variant="solid"
                                                         size="lg"
                                                         onClick={() => handleAddTag()}
-                                                        isDisabled={!newTag.trim() || fetchingData} 
+                                                        isDisabled={!newTag.trim() || fetchingData}
                                                         className="shadow-sm rounded-xl h-12 w-12 flex-shrink-0"
                                                     >
                                                         <IoAdd className="h-5 w-5" />

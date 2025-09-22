@@ -25,18 +25,6 @@
         }
       },
       "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
-    },
-    "icp_ledger_canister": {
-      "type": "custom",
-      "candid": "https://github.com/dfinity/ic/releases/download/ledger-suite-icp-2025-08-29/ledger.did",
-      "wasm": "https://github.com/dfinity/ic/releases/download/ledger-suite-icp-2025-08-29/ledger-canister_notify-method.wasm.gz",
-      "init_arg": "(variant { Init = record { minting_account = \"e68adcbd5eef0e2d89e5bc3ff606b8ed687a648d586bd23780d3f412a67a9add\"; initial_values = vec { record { \"1d2bbf4738a451e3ef79b1b004c9e49fa9b1412014ab8e0c0ed2a1a2c3fed534\"; record { e8s = 10_000_000_000 : nat64; }; }; }; send_whitelist = vec {}; transfer_fee = opt record { e8s = 10_000 : nat64; }; token_symbol = opt \"LICP\"; token_name = opt \"Local ICP\"; } })"
-    },
-    "ckbtc_ledger_canister": {
-      "type": "custom",
-      "candid": "https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-19/ledger.did",
-      "wasm": "https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-19/ic-icrc1-ledger.wasm.gz",
-      "init_arg": "(variant {Init = record { token_symbol = \"LckBTC\"; token_name = \"Local ckBTC\"; minting_account = record { owner = principal \"hsi7t-vkflc-5qp5n-3zvsu-gzkqn-swisb-rtbwc-oriwx-nlp2z-ux2yx-uqe\" }; transfer_fee = 10; metadata = vec {}; feature_flags = opt record{icrc2 = true}; initial_balances = vec { record { record { owner = principal \"hsi7t-vkflc-5qp5n-3zvsu-gzkqn-swisb-rtbwc-oriwx-nlp2z-ux2yx-uqe\"; }; 10_000_000; }; }; archive_options = record { num_blocks_to_archive = 1000; trigger_threshold = 2000; controller_id = principal \"hsi7t-vkflc-5qp5n-3zvsu-gzkqn-swisb-rtbwc-oriwx-nlp2z-ux2yx-uqe\"; cycles_for_archive_creation = opt 10000000000000; }; } })"
     }
   },
   "defaults": {
