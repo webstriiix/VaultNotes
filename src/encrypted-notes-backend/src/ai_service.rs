@@ -3,7 +3,7 @@
 
 use candid::{CandidType, Deserialize};
 use ic_cdk::api::time;
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
 
 // Advanced AI Request/Response Types
 #[derive(Clone, Debug, CandidType, Deserialize)]
@@ -106,14 +106,14 @@ pub struct SearchPreferences {
 pub struct ContentPreferences {
     pub preferred_content_types: Vec<String>,
     pub summary_length_preference: String, // "short", "medium", "long"
-    pub summary_style_preference: String, // "bullet", "paragraph", "technical"
-    pub sentiment_filter: Option<String>, // Filter by sentiment
+    pub summary_style_preference: String,  // "bullet", "paragraph", "technical"
+    pub sentiment_filter: Option<String>,  // Filter by sentiment
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct TopicWeight {
     pub topic: String,
-    pub weight: f64, // Interest level 0.0 to 1.0
+    pub weight: f64,    // Interest level 0.0 to 1.0
     pub frequency: u32, // How often searched
 }
 
@@ -221,7 +221,7 @@ pub struct SearchResult {
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct QueryAnalysis {
-    pub intent: String, // "search", "question", "command"
+    pub intent: String,     // "search", "question", "command"
     pub query_type: String, // "factual", "conceptual", "procedural"
     pub entities: Vec<Entity>,
     pub keywords: Vec<String>,
@@ -270,72 +270,138 @@ impl AdvancedTextAnalyzer {
 
         // English stop words
         let english_stop_words = vec![
-            "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", 
-            "of", "with", "by", "from", "up", "about", "into", "through", "during",
-            "before", "after", "above", "below", "between", "among", "this", "that",
-            "these", "those", "i", "me", "my", "myself", "we", "our", "ours", "you",
-            "your", "yours", "he", "him", "his", "she", "her", "hers", "it", "its",
-            "they", "them", "their", "theirs", "what", "which", "who", "whom", "whose",
-            "where", "when", "why", "how", "all", "any", "both", "each", "few", "more",
-            "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same",
-            "so", "than", "too", "very", "can", "will", "just", "should", "now"
-        ].into_iter().map(|s| s.to_string()).collect();
+            "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with",
+            "by", "from", "up", "about", "into", "through", "during", "before", "after", "above",
+            "below", "between", "among", "this", "that", "these", "those", "i", "me", "my",
+            "myself", "we", "our", "ours", "you", "your", "yours", "he", "him", "his", "she",
+            "her", "hers", "it", "its", "they", "them", "their", "theirs", "what", "which", "who",
+            "whom", "whose", "where", "when", "why", "how", "all", "any", "both", "each", "few",
+            "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same",
+            "so", "than", "too", "very", "can", "will", "just", "should", "now",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
 
         // Indonesian stop words
         let indonesian_stop_words = vec![
-            "yang", "dan", "di", "ke", "dari", "untuk", "dengan", "pada", "dalam", "oleh",
-            "akan", "telah", "sudah", "adalah", "ini", "itu", "saya", "anda", "kita", "mereka",
-            "dia", "nya", "juga", "atau", "tidak", "bukan", "dapat", "bisa", "harus", "mau",
-            "ingin", "perlu", "ada", "seperti", "karena", "jika", "kalau", "ketika", "saat",
-            "sebagai", "antara", "sebelum", "sesudah", "selama", "sampai", "hingga", "bahwa"
-        ].into_iter().map(|s| s.to_string()).collect();
+            "yang", "dan", "di", "ke", "dari", "untuk", "dengan", "pada", "dalam", "oleh", "akan",
+            "telah", "sudah", "adalah", "ini", "itu", "saya", "anda", "kita", "mereka", "dia",
+            "nya", "juga", "atau", "tidak", "bukan", "dapat", "bisa", "harus", "mau", "ingin",
+            "perlu", "ada", "seperti", "karena", "jika", "kalau", "ketika", "saat", "sebagai",
+            "antara", "sebelum", "sesudah", "selama", "sampai", "hingga", "bahwa",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
 
-        analyzer.stop_words.insert("en".to_string(), english_stop_words);
-        analyzer.stop_words.insert("id".to_string(), indonesian_stop_words);
+        analyzer
+            .stop_words
+            .insert("en".to_string(), english_stop_words);
+        analyzer
+            .stop_words
+            .insert("id".to_string(), indonesian_stop_words);
 
         // Content type patterns
         let mut content_patterns = HashMap::new();
-        content_patterns.insert("meeting".to_string(), vec![
-            "agenda".to_string(), "minutes".to_string(), "action items".to_string(),
-            "attendees".to_string(), "discussion".to_string(), "decisions".to_string()
-        ]);
-        content_patterns.insert("technical".to_string(), vec![
-            "implementation".to_string(), "algorithm".to_string(), "architecture".to_string(),
-            "code".to_string(), "function".to_string(), "class".to_string(), "method".to_string()
-        ]);
-        content_patterns.insert("personal".to_string(), vec![
-            "diary".to_string(), "journal".to_string(), "thoughts".to_string(),
-            "feelings".to_string(), "today".to_string(), "yesterday".to_string()
-        ]);
-        content_patterns.insert("research".to_string(), vec![
-            "hypothesis".to_string(), "methodology".to_string(), "results".to_string(),
-            "conclusion".to_string(), "analysis".to_string(), "study".to_string()
-        ]);
+        content_patterns.insert(
+            "meeting".to_string(),
+            vec![
+                "agenda".to_string(),
+                "minutes".to_string(),
+                "action items".to_string(),
+                "attendees".to_string(),
+                "discussion".to_string(),
+                "decisions".to_string(),
+            ],
+        );
+        content_patterns.insert(
+            "technical".to_string(),
+            vec![
+                "implementation".to_string(),
+                "algorithm".to_string(),
+                "architecture".to_string(),
+                "code".to_string(),
+                "function".to_string(),
+                "class".to_string(),
+                "method".to_string(),
+            ],
+        );
+        content_patterns.insert(
+            "personal".to_string(),
+            vec![
+                "diary".to_string(),
+                "journal".to_string(),
+                "thoughts".to_string(),
+                "feelings".to_string(),
+                "today".to_string(),
+                "yesterday".to_string(),
+            ],
+        );
+        content_patterns.insert(
+            "research".to_string(),
+            vec![
+                "hypothesis".to_string(),
+                "methodology".to_string(),
+                "results".to_string(),
+                "conclusion".to_string(),
+                "analysis".to_string(),
+                "study".to_string(),
+            ],
+        );
 
         analyzer.content_type_patterns = content_patterns;
 
         // Language detection patterns
         let mut lang_patterns = HashMap::new();
-        lang_patterns.insert("en".to_string(), vec![
-            "the".to_string(), "and".to_string(), "that".to_string(), "have".to_string(),
-            "for".to_string(), "not".to_string(), "with".to_string(), "you".to_string()
-        ]);
-        lang_patterns.insert("id".to_string(), vec![
-            "yang".to_string(), "dan".to_string(), "untuk".to_string(), "dengan".to_string(),
-            "dalam".to_string(), "pada".to_string(), "adalah".to_string(), "ini".to_string()
-        ]);
+        lang_patterns.insert(
+            "en".to_string(),
+            vec![
+                "the".to_string(),
+                "and".to_string(),
+                "that".to_string(),
+                "have".to_string(),
+                "for".to_string(),
+                "not".to_string(),
+                "with".to_string(),
+                "you".to_string(),
+            ],
+        );
+        lang_patterns.insert(
+            "id".to_string(),
+            vec![
+                "yang".to_string(),
+                "dan".to_string(),
+                "untuk".to_string(),
+                "dengan".to_string(),
+                "dalam".to_string(),
+                "pada".to_string(),
+                "adalah".to_string(),
+                "ini".to_string(),
+            ],
+        );
 
         analyzer.language_patterns = lang_patterns;
 
         // Sentiment keywords (simplified)
         let mut sentiment_en = vec![
-            ("excellent".to_string(), 0.9), ("good".to_string(), 0.6), ("great".to_string(), 0.8),
-            ("bad".to_string(), -0.6), ("terrible".to_string(), -0.9), ("awful".to_string(), -0.8),
-            ("amazing".to_string(), 0.9), ("wonderful".to_string(), 0.8), ("horrible".to_string(), -0.8),
-            ("fantastic".to_string(), 0.9), ("disappointing".to_string(), -0.6), ("satisfactory".to_string(), 0.3)
+            ("excellent".to_string(), 0.9),
+            ("good".to_string(), 0.6),
+            ("great".to_string(), 0.8),
+            ("bad".to_string(), -0.6),
+            ("terrible".to_string(), -0.9),
+            ("awful".to_string(), -0.8),
+            ("amazing".to_string(), 0.9),
+            ("wonderful".to_string(), 0.8),
+            ("horrible".to_string(), -0.8),
+            ("fantastic".to_string(), 0.9),
+            ("disappointing".to_string(), -0.6),
+            ("satisfactory".to_string(), 0.3),
         ];
 
-        analyzer.sentiment_keywords.insert("en".to_string(), sentiment_en);
+        analyzer
+            .sentiment_keywords
+            .insert("en".to_string(), sentiment_en);
 
         analyzer
     }
@@ -373,7 +439,7 @@ impl AdvancedTextAnalyzer {
     fn detect_language(&self, text: &str) -> (String, f64) {
         let text_lower = text.to_lowercase();
         let words: Vec<&str> = text_lower.split_whitespace().collect();
-        
+
         if words.is_empty() {
             return ("en".to_string(), 0.5);
         }
@@ -408,9 +474,14 @@ impl AdvancedTextAnalyzer {
         for (i, word) in words.iter().enumerate() {
             // Simple capitalization-based entity detection
             if word.chars().next().unwrap_or('a').is_uppercase() && word.len() > 2 {
-                let entity_type = if i > 0 && (words[i-1] == "Mr." || words[i-1] == "Mrs." || words[i-1] == "Dr.") {
+                let entity_type = if i > 0
+                    && (words[i - 1] == "Mr." || words[i - 1] == "Mrs." || words[i - 1] == "Dr.")
+                {
                     "PERSON"
-                } else if word.ends_with("Inc.") || word.ends_with("Corp.") || word.ends_with("Ltd.") {
+                } else if word.ends_with("Inc.")
+                    || word.ends_with("Corp.")
+                    || word.ends_with("Ltd.")
+                {
                     "ORGANIZATION"
                 } else if word.chars().all(|c| c.is_alphabetic() || c == '.') {
                     "PERSON"
@@ -433,7 +504,7 @@ impl AdvancedTextAnalyzer {
     fn analyze_sentiment(&self, text: &str, language: &str) -> (String, f64) {
         let text_lower = text.to_lowercase();
         let words: Vec<&str> = text_lower.split_whitespace().collect();
-        
+
         if let Some(sentiment_words) = self.sentiment_keywords.get(language) {
             let mut total_sentiment = 0.0;
             let mut sentiment_count = 0;
@@ -466,14 +537,14 @@ impl AdvancedTextAnalyzer {
     // Extract keywords with weights
     fn extract_keywords_with_weights(&self, text: &str, language: &str) -> Vec<KeywordWithWeight> {
         let text_lower = text.to_lowercase();
-        let words: Vec<&str> = text_lower.split_whitespace()
+        let words: Vec<&str> = text_lower
+            .split_whitespace()
             .filter(|word| word.len() > 3)
             .collect();
 
         let mut word_freq = HashMap::new();
         let empty_set = HashSet::new();
-        let stop_words = self.stop_words.get(language)
-            .unwrap_or(&empty_set);
+        let stop_words = self.stop_words.get(language).unwrap_or(&empty_set);
 
         for word in &words {
             let clean_word = word.trim_matches(|c: char| !c.is_alphabetic());
@@ -488,7 +559,11 @@ impl AdvancedTextAnalyzer {
             .map(|(word, freq)| KeywordWithWeight {
                 keyword: word.clone(),
                 weight: freq as f64 / max_freq as f64,
-                category: if word.len() > 8 { "complex".to_string() } else { "simple".to_string() },
+                category: if word.len() > 8 {
+                    "complex".to_string()
+                } else {
+                    "simple".to_string()
+                },
             })
             .collect();
 
@@ -502,15 +577,14 @@ impl AdvancedTextAnalyzer {
     fn calculate_complexity(&self, text: &str) -> f64 {
         let sentences: Vec<&str> = text.split(&['.', '!', '?'][..]).collect();
         let words: Vec<&str> = text.split_whitespace().collect();
-        
+
         if sentences.is_empty() || words.is_empty() {
             return 0.0;
         }
 
         let avg_sentence_length = words.len() as f64 / sentences.len() as f64;
-        let avg_word_length = words.iter()
-            .map(|w| w.len())
-            .sum::<usize>() as f64 / words.len() as f64;
+        let avg_word_length =
+            words.iter().map(|w| w.len()).sum::<usize>() as f64 / words.len() as f64;
 
         // Normalize to 0-1 scale
         let complexity = (avg_sentence_length / 20.0 + avg_word_length / 10.0) / 2.0;
@@ -529,24 +603,29 @@ impl AdvancedTextAnalyzer {
     fn score_sentence(&self, sentence: &str, _content_type: &str) -> f64 {
         let words: Vec<&str> = sentence.split_whitespace().collect();
         let mut score = 0.0;
-        
+
         // Basic scoring: longer sentences get higher scores
         score += words.len() as f64 * 0.1;
-        
+
         // Bonus for sentences with numbers or specific keywords
         if sentence.contains(char::is_numeric) {
             score += 1.0;
         }
-        
+
         score
     }
 
     // Method to select top sentences for summary
-    fn select_top_sentences(&self, scored_sentences: Vec<(String, f64)>, target_count: usize) -> Vec<String> {
+    fn select_top_sentences(
+        &self,
+        scored_sentences: Vec<(String, f64)>,
+        target_count: usize,
+    ) -> Vec<String> {
         let mut sorted_sentences = scored_sentences;
         sorted_sentences.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-        
-        sorted_sentences.into_iter()
+
+        sorted_sentences
+            .into_iter()
             .take(target_count)
             .map(|(sentence, _)| sentence)
             .collect()
@@ -578,10 +657,10 @@ pub struct SummaryResponse {
 // Enhanced summarization function with improved algorithms
 pub fn summarize_text(request: SummaryRequest) -> SummaryResponse {
     let start_time = time(); // IC time in nanoseconds
-    
+
     let text = request.text;
     let content_type = request.content_type.unwrap_or("general".to_string());
-    
+
     // Handle very short texts
     if text.len() < 100 {
         return SummaryResponse {
@@ -593,10 +672,10 @@ pub fn summarize_text(request: SummaryRequest) -> SummaryResponse {
             error: None,
         };
     }
-    
+
     let analyzer = AdvancedTextAnalyzer::new();
     let sentences = analyzer.split_into_sentences(&text);
-    
+
     if sentences.is_empty() {
         return SummaryResponse {
             summary: "No meaningful content found for summarization.".to_string(),
@@ -607,22 +686,29 @@ pub fn summarize_text(request: SummaryRequest) -> SummaryResponse {
             error: Some("Could not parse sentences from text".to_string()),
         };
     }
-    
+
     // Score all sentences
     let scored_sentences: Vec<(String, f64)> = sentences
         .iter()
-        .map(|sentence| (sentence.clone(), analyzer.score_sentence(sentence, &content_type)))
+        .map(|sentence| {
+            (
+                sentence.clone(),
+                analyzer.score_sentence(sentence, &content_type),
+            )
+        })
         .collect();
-    
+
     // Select top sentences for summary
-    let target_sentence_count = ((sentences.len() as f64 * 0.3).ceil() as usize).min(5).max(1);
+    let target_sentence_count = ((sentences.len() as f64 * 0.3).ceil() as usize)
+        .min(5)
+        .max(1);
     let selected = analyzer.select_top_sentences(scored_sentences, target_sentence_count);
-    
+
     // Generate the final summary
     let summary = analyzer.generate_summary_text(selected);
-    
+
     let compression_ratio = summary.len() as f64 / text.len() as f64;
-    
+
     SummaryResponse {
         summary,
         success: true,
@@ -635,41 +721,109 @@ pub fn summarize_text(request: SummaryRequest) -> SummaryResponse {
 
 fn score_technical_keywords(sentence: &str) -> f64 {
     let keywords = vec![
-        "algorithm", "implementation", "method", "process", "architecture",
-        "framework", "protocol", "system", "technology", "solution", "approach",
-        "design", "structure", "component", "module", "interface", "api",
-        "database", "server", "client", "network", "security", "performance",
-        "optimization", "configuration", "deployment", "integration", "testing"
+        "algorithm",
+        "implementation",
+        "method",
+        "process",
+        "architecture",
+        "framework",
+        "protocol",
+        "system",
+        "technology",
+        "solution",
+        "approach",
+        "design",
+        "structure",
+        "component",
+        "module",
+        "interface",
+        "api",
+        "database",
+        "server",
+        "client",
+        "network",
+        "security",
+        "performance",
+        "optimization",
+        "configuration",
+        "deployment",
+        "integration",
+        "testing",
     ];
-    
-    keywords.iter()
+
+    keywords
+        .iter()
         .map(|keyword| if sentence.contains(keyword) { 1.0 } else { 0.0 })
         .sum()
 }
 
 fn score_research_keywords(sentence: &str) -> f64 {
     let keywords = vec![
-        "study", "research", "analysis", "findings", "results", "conclusion",
-        "evidence", "data", "survey", "experiment", "hypothesis", "theory",
-        "methodology", "sample", "population", "correlation", "causation",
-        "significant", "statistical", "trend", "pattern", "observation",
-        "discovery", "breakthrough", "innovation", "publication", "peer review"
+        "study",
+        "research",
+        "analysis",
+        "findings",
+        "results",
+        "conclusion",
+        "evidence",
+        "data",
+        "survey",
+        "experiment",
+        "hypothesis",
+        "theory",
+        "methodology",
+        "sample",
+        "population",
+        "correlation",
+        "causation",
+        "significant",
+        "statistical",
+        "trend",
+        "pattern",
+        "observation",
+        "discovery",
+        "breakthrough",
+        "innovation",
+        "publication",
+        "peer review",
     ];
-    
-    keywords.iter()
+
+    keywords
+        .iter()
         .map(|keyword| if sentence.contains(keyword) { 1.2 } else { 0.0 })
         .sum()
 }
 
 fn score_general_keywords(sentence: &str) -> f64 {
     let keywords = vec![
-        "problem", "solution", "issue", "challenge", "opportunity", "benefit",
-        "advantage", "disadvantage", "impact", "effect", "cause", "reason",
-        "purpose", "objective", "goal", "target", "achievement", "success",
-        "failure", "improvement", "development", "growth", "change", "trend"
+        "problem",
+        "solution",
+        "issue",
+        "challenge",
+        "opportunity",
+        "benefit",
+        "advantage",
+        "disadvantage",
+        "impact",
+        "effect",
+        "cause",
+        "reason",
+        "purpose",
+        "objective",
+        "goal",
+        "target",
+        "achievement",
+        "success",
+        "failure",
+        "improvement",
+        "development",
+        "growth",
+        "change",
+        "trend",
     ];
-    
-    keywords.iter()
+
+    keywords
+        .iter()
         .map(|keyword| if sentence.contains(keyword) { 0.8 } else { 0.0 })
         .sum()
 }
@@ -679,10 +833,18 @@ fn score_sentence_structure(sentence: &str, _words: &[&str]) -> f64 {
 
     // Transition words indicate logical connections
     let transition_words = vec![
-        "however", "therefore", "consequently", "furthermore", "moreover",
-        "additionally", "meanwhile", "similarly", "in contrast", "for example"
+        "however",
+        "therefore",
+        "consequently",
+        "furthermore",
+        "moreover",
+        "additionally",
+        "meanwhile",
+        "similarly",
+        "in contrast",
+        "for example",
     ];
-    
+
     for transition in &transition_words {
         if sentence.contains(transition) {
             score += 1.0;
@@ -691,7 +853,9 @@ fn score_sentence_structure(sentence: &str, _words: &[&str]) -> f64 {
     }
 
     // Complex sentences with subordinate clauses often contain more information
-    let clause_indicators = ["because", "since", "although", "while", "whereas", "if", "when", "where"];
+    let clause_indicators = [
+        "because", "since", "although", "while", "whereas", "if", "when", "where",
+    ];
     for indicator in &clause_indicators {
         if sentence.contains(indicator) {
             score += 0.5;
@@ -709,10 +873,10 @@ fn score_sentence_structure(sentence: &str, _words: &[&str]) -> f64 {
 // Remove similar sentences to avoid redundancy
 fn remove_redundant_sentences(scored_sentences: Vec<SentenceScore>) -> Vec<SentenceScore> {
     let mut filtered: Vec<SentenceScore> = Vec::new();
-    
+
     for sentence in scored_sentences {
         let mut is_redundant = false;
-        
+
         for existing in &filtered {
             if sentences_are_similar(&sentence.sentence, &existing.sentence) {
                 // Keep the higher scored sentence
@@ -727,22 +891,26 @@ fn remove_redundant_sentences(scored_sentences: Vec<SentenceScore>) -> Vec<Sente
                 }
             }
         }
-        
+
         if !is_redundant {
             filtered.push(sentence);
         }
     }
-    
+
     filtered
 }
 
 fn sentences_are_similar(sent1: &str, sent2: &str) -> bool {
-    let stop_words = vec!["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by"];
-    
-    let words1: HashSet<&str> = sent1.split_whitespace()
+    let stop_words = vec![
+        "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by",
+    ];
+
+    let words1: HashSet<&str> = sent1
+        .split_whitespace()
         .filter(|word| !stop_words.contains(word))
         .collect();
-    let words2: HashSet<&str> = sent2.split_whitespace()
+    let words2: HashSet<&str> = sent2
+        .split_whitespace()
         .filter(|word| !stop_words.contains(word))
         .collect();
 
@@ -752,7 +920,7 @@ fn sentences_are_similar(sent1: &str, sent2: &str) -> bool {
 
     let intersection = words1.intersection(&words2).count();
     let union = words1.union(&words2).count();
-    
+
     // If more than 60% of unique words overlap, consider similar
     (intersection as f64 / union as f64) > 0.6
 }
@@ -761,23 +929,23 @@ fn sentences_are_similar(sent1: &str, sent2: &str) -> bool {
 pub fn analyze_user_feedback(feedback: &[SearchFeedback]) -> LearningProfile {
     let mut search_patterns = Vec::new();
     let mut content_engagement = Vec::new();
-    
+
     // Analyze search patterns
     let time_patterns = extract_temporal_patterns(feedback);
     let topic_patterns = extract_topic_patterns(feedback);
     let complexity_patterns = extract_complexity_patterns(feedback);
-    
+
     search_patterns.extend(time_patterns);
     search_patterns.extend(topic_patterns);
     search_patterns.extend(complexity_patterns);
-    
+
     // Analyze content engagement
     content_engagement = calculate_content_engagement(feedback);
-    
+
     // Calculate adaptation and confidence scores
     let adaptation_score = calculate_adaptation_score(feedback);
     let confidence_level = calculate_confidence_level(feedback);
-    
+
     LearningProfile {
         search_patterns,
         content_engagement,
@@ -789,78 +957,90 @@ pub fn analyze_user_feedback(feedback: &[SearchFeedback]) -> LearningProfile {
 fn extract_temporal_patterns(feedback: &[SearchFeedback]) -> Vec<SearchPattern> {
     // Analyze when user typically searches and what works best
     let mut patterns = Vec::new();
-    
+
     // Simple pattern: analyze average dwell time for successful searches
-    let successful_searches: Vec<&SearchFeedback> = feedback.iter()
+    let successful_searches: Vec<&SearchFeedback> = feedback
+        .iter()
         .filter(|f| f.relevance_score > 0.7 && f.clicked)
         .collect();
-        
+
     if !successful_searches.is_empty() {
-        let avg_dwell_time: f64 = successful_searches.iter()
+        let avg_dwell_time: f64 = successful_searches
+            .iter()
             .map(|f| f.time_spent)
-            .sum::<f64>() / successful_searches.len() as f64;
-            
+            .sum::<f64>()
+            / successful_searches.len() as f64;
+
         patterns.push(SearchPattern {
             pattern_type: "successful_dwell_time".to_string(),
             pattern_data: format!("{{\"avg_dwell_time\": {}}}", avg_dwell_time),
             frequency: successful_searches.len() as f64 / feedback.len() as f64,
-            effectiveness: successful_searches.iter()
+            effectiveness: successful_searches
+                .iter()
                 .map(|f| f.relevance_score)
-                .sum::<f64>() / successful_searches.len() as f64,
+                .sum::<f64>()
+                / successful_searches.len() as f64,
         });
     }
-    
+
     patterns
 }
 
 fn extract_topic_patterns(feedback: &[SearchFeedback]) -> Vec<SearchPattern> {
     let mut patterns = Vec::new();
     let mut topic_performance: HashMap<String, (f64, u32)> = HashMap::new();
-    
+
     // Extract topics from queries and track performance
     for f in feedback {
         let topics = extract_simple_keywords(&f.search_query);
         for topic in topics {
-            let entry = topic_performance.entry(topic.keyword.clone()).or_insert((0.0, 0));
+            let entry = topic_performance
+                .entry(topic.keyword.clone())
+                .or_insert((0.0, 0));
             entry.0 += f.relevance_score;
             entry.1 += 1;
         }
     }
-    
+
     // Create patterns for high-performing topics
     for (topic, (total_score, count)) in topic_performance {
-        if count >= 3 { // Only consider topics with multiple searches
+        if count >= 3 {
+            // Only consider topics with multiple searches
             let avg_performance = total_score / count as f64;
             if avg_performance > 0.6 {
                 patterns.push(SearchPattern {
                     pattern_type: "high_performance_topic".to_string(),
-                    pattern_data: format!("{{\"topic\": \"{}\", \"performance\": {}}}", topic, avg_performance),
+                    pattern_data: format!(
+                        "{{\"topic\": \"{}\", \"performance\": {}}}",
+                        topic, avg_performance
+                    ),
                     frequency: count as f64 / feedback.len() as f64,
                     effectiveness: avg_performance,
                 });
             }
         }
     }
-    
+
     patterns
 }
 
 fn extract_complexity_patterns(feedback: &[SearchFeedback]) -> Vec<SearchPattern> {
     let mut patterns = Vec::new();
-    
+
     // Analyze preferred complexity levels
-    let mut complexity_scores: Vec<(f64, f64)> = feedback.iter()
+    let mut complexity_scores: Vec<(f64, f64)> = feedback
+        .iter()
         .map(|f| {
             let complexity = calculate_simple_complexity(&f.search_query);
             (complexity, f.relevance_score)
         })
         .collect();
-        
+
     if !complexity_scores.is_empty() {
         // Find complexity level that yields best results
         complexity_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
         let preferred_complexity = complexity_scores[0].0;
-        
+
         patterns.push(SearchPattern {
             pattern_type: "preferred_complexity".to_string(),
             pattern_data: format!("{{\"complexity\": {}}}", preferred_complexity),
@@ -868,13 +1048,13 @@ fn extract_complexity_patterns(feedback: &[SearchFeedback]) -> Vec<SearchPattern
             effectiveness: complexity_scores[0].1,
         });
     }
-    
+
     patterns
 }
 
 fn calculate_content_engagement(feedback: &[SearchFeedback]) -> Vec<ContentEngagement> {
     let mut engagement_map: HashMap<String, (f64, u32, f64)> = HashMap::new();
-    
+
     for f in feedback {
         // Determine content type from query characteristics
         let content_type = if f.search_query.len() > 50 {
@@ -884,22 +1064,23 @@ fn calculate_content_engagement(feedback: &[SearchFeedback]) -> Vec<ContentEngag
         } else {
             "general".to_string()
         };
-        
+
         let entry = engagement_map.entry(content_type).or_insert((0.0, 0, 0.0));
         entry.0 += f.relevance_score;
         entry.1 += 1;
         entry.2 += f.time_spent;
     }
-    
-    engagement_map.into_iter()
-        .map(|(content_type, (total_score, count, total_time))| {
-            ContentEngagement {
+
+    engagement_map
+        .into_iter()
+        .map(
+            |(content_type, (total_score, count, total_time))| ContentEngagement {
                 content_type,
                 engagement_score: total_score / count as f64,
                 interaction_count: count,
                 average_dwell_time: total_time / count as f64,
-            }
-        })
+            },
+        )
         .collect()
 }
 
@@ -907,21 +1088,20 @@ fn calculate_adaptation_score(feedback: &[SearchFeedback]) -> f64 {
     if feedback.len() < 5 {
         return 0.3; // Low confidence with limited data
     }
-    
+
     // Calculate how well our understanding improves over time
-    let recent_feedback: Vec<&SearchFeedback> = feedback.iter()
-        .rev()
-        .take(feedback.len() / 2)
-        .collect();
-        
-    let recent_avg: f64 = recent_feedback.iter()
+    let recent_feedback: Vec<&SearchFeedback> =
+        feedback.iter().rev().take(feedback.len() / 2).collect();
+
+    let recent_avg: f64 = recent_feedback
+        .iter()
         .map(|f| f.relevance_score)
-        .sum::<f64>() / recent_feedback.len() as f64;
-        
-    let overall_avg: f64 = feedback.iter()
-        .map(|f| f.relevance_score)
-        .sum::<f64>() / feedback.len() as f64;
-        
+        .sum::<f64>()
+        / recent_feedback.len() as f64;
+
+    let overall_avg: f64 =
+        feedback.iter().map(|f| f.relevance_score).sum::<f64>() / feedback.len() as f64;
+
     // If recent performance is better, we're adapting well
     if recent_avg > overall_avg {
         0.8 + (recent_avg - overall_avg).min(0.2)
@@ -934,11 +1114,11 @@ fn calculate_confidence_level(feedback: &[SearchFeedback]) -> f64 {
     if feedback.is_empty() {
         return 0.0;
     }
-    
+
     // Confidence based on data volume and consistency
     let data_confidence = (feedback.len() as f64 / 100.0).min(1.0); // More data = more confidence
     let consistency = calculate_feedback_consistency(feedback);
-    
+
     (data_confidence + consistency) / 2.0
 }
 
@@ -946,24 +1126,27 @@ fn calculate_feedback_consistency(feedback: &[SearchFeedback]) -> f64 {
     if feedback.len() < 2 {
         return 0.5;
     }
-    
+
     let scores: Vec<f64> = feedback.iter().map(|f| f.relevance_score).collect();
     let mean = scores.iter().sum::<f64>() / scores.len() as f64;
-    let variance = scores.iter()
+    let variance = scores
+        .iter()
         .map(|score| (score - mean).powi(2))
-        .sum::<f64>() / scores.len() as f64;
+        .sum::<f64>()
+        / scores.len() as f64;
     let std_dev = variance.sqrt();
-    
+
     // Lower standard deviation = higher consistency
     (1.0 - std_dev).max(0.0)
 }
 
 pub fn personalize_search_results(
-    results: Vec<SearchResult>, 
+    results: Vec<SearchResult>,
     preferences: &UserPreferences,
-    context: Option<&SearchContext>
+    context: Option<&SearchContext>,
 ) -> Vec<PersonalizedSearchResult> {
-    results.into_iter()
+    results
+        .into_iter()
         .map(|result| {
             let content_id = result.content_id.clone();
             let base_relevance_score = result.relevance_score;
@@ -972,11 +1155,12 @@ pub fn personalize_search_results(
             let context_relevance = result.context_relevance;
             let snippet = result.snippet.clone();
             let highlights = result.highlights.clone();
-            
-            let personalization_factors = calculate_personalization_factors(&result, preferences, context);
+
+            let personalization_factors =
+                calculate_personalization_factors(&result, preferences, context);
             let personalized_score = apply_personalization(&result, &personalization_factors);
             let confidence = calculate_result_confidence(&result, preferences);
-            
+
             PersonalizedSearchResult {
                 content_id,
                 base_relevance_score,
@@ -996,10 +1180,10 @@ pub fn personalize_search_results(
 fn calculate_personalization_factors(
     result: &SearchResult,
     preferences: &UserPreferences,
-    context: Option<&SearchContext>
+    context: Option<&SearchContext>,
 ) -> Vec<PersonalizationFactor> {
     let mut factors = Vec::new();
-    
+
     // Complexity preference factor
     let content_complexity = calculate_simple_complexity(&result.snippet);
     let user_complexity_pref = match preferences.complexity_preference.as_str() {
@@ -1009,15 +1193,17 @@ fn calculate_personalization_factors(
         _ => 0.5,
     };
     let complexity_match = 1.0 - (content_complexity - user_complexity_pref).abs();
-    
+
     factors.push(PersonalizationFactor {
         factor_type: "complexity_match".to_string(),
         weight: 0.2,
         contribution: complexity_match * 0.2,
-        explanation: format!("Content complexity ({:.1}) matches user preference ({})", 
-                            content_complexity, preferences.complexity_preference),
+        explanation: format!(
+            "Content complexity ({:.1}) matches user preference ({})",
+            content_complexity, preferences.complexity_preference
+        ),
     });
-    
+
     // Historical preference factor
     let historical_score = calculate_historical_preference_score(&result, preferences);
     if historical_score > 0.0 {
@@ -1028,7 +1214,7 @@ fn calculate_personalization_factors(
             explanation: "Based on similar past search interactions".to_string(),
         });
     }
-    
+
     // Context relevance factor
     if let Some(ctx) = context {
         let context_score = calculate_context_relevance_score(&result, ctx);
@@ -1039,14 +1225,14 @@ fn calculate_personalization_factors(
             explanation: "Relevant to current search context".to_string(),
         });
     }
-    
+
     factors
 }
 
 fn apply_personalization(result: &SearchResult, factors: &[PersonalizationFactor]) -> f64 {
     let base_score = result.relevance_score;
     let personalization_boost: f64 = factors.iter().map(|f| f.contribution).sum();
-    
+
     // Apply personalization boost, but cap at 1.0
     (base_score + personalization_boost).min(1.0)
 }
@@ -1056,46 +1242,51 @@ fn calculate_result_confidence(_result: &SearchResult, _preferences: &UserPrefer
     0.7
 }
 
-fn calculate_historical_preference_score(_result: &SearchResult, _preferences: &UserPreferences) -> f64 {
+fn calculate_historical_preference_score(
+    _result: &SearchResult,
+    _preferences: &UserPreferences,
+) -> f64 {
     // Simplified implementation - return base score
     0.5
 }
 
 fn calculate_context_relevance_score(result: &SearchResult, context: &SearchContext) -> f64 {
     let mut relevance = 0.0;
-    
+
     // Check relevance to previous queries in session
     for prev_query in &context.previous_queries {
         let similarity = calculate_query_similarity(prev_query, &result.snippet);
         relevance += similarity * 0.3;
     }
-    
+
     // Intent-based relevance
     if context.search_intent == "exploration" {
         relevance += 0.2; // Boost for exploration intent
     }
-    
+
     relevance.min(1.0)
 }
 
 fn calculate_query_similarity(query1: &str, query2: &str) -> f64 {
     let words1: HashSet<&str> = query1.split_whitespace().collect();
     let words2: HashSet<&str> = query2.split_whitespace().collect();
-    
+
     if words1.is_empty() || words2.is_empty() {
         return 0.0;
     }
-    
+
     let intersection = words1.intersection(&words2).count();
     let union = words1.union(&words2).count();
-    
+
     intersection as f64 / union as f64
 }
 
 // Helper function for simple keyword extraction
 fn extract_simple_keywords(text: &str) -> Vec<KeywordWithWeight> {
-    let stop_words = vec!["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by"];
-    
+    let stop_words = vec![
+        "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by",
+    ];
+
     text.split_whitespace()
         .filter(|word| !stop_words.contains(word) && word.len() > 2)
         .map(|word| KeywordWithWeight {
@@ -1110,10 +1301,9 @@ fn extract_simple_keywords(text: &str) -> Vec<KeywordWithWeight> {
 fn calculate_simple_complexity(text: &str) -> f64 {
     let words = text.split_whitespace().count();
     let sentences = text.split('.').count();
-    let avg_word_length: f64 = text.split_whitespace()
-        .map(|w| w.len())
-        .sum::<usize>() as f64 / words.max(1) as f64;
-    
+    let avg_word_length: f64 =
+        text.split_whitespace().map(|w| w.len()).sum::<usize>() as f64 / words.max(1) as f64;
+
     // Simple complexity based on word count, sentence structure, and average word length
     (words as f64 * 0.1) + (sentences as f64 * 0.2) + (avg_word_length * 0.3)
 }
@@ -1137,38 +1327,42 @@ fn create_coherent_summary(sentences: Vec<SentenceScore>, content_type: &str) ->
     if sentences.is_empty() {
         return "No content available for summarization.".to_string();
     }
-    
+
     let mut summary_parts = Vec::new();
-    
+
     // Add content-specific introduction if needed
     match content_type {
         "meeting" => {
             if sentences.len() > 1 {
                 summary_parts.push("Key meeting outcomes:".to_string());
             }
-        },
+        }
         "research" => {
             if sentences.len() > 1 {
                 summary_parts.push("Research summary:".to_string());
             }
-        },
+        }
         "technical" => {
             if sentences.len() > 1 {
                 summary_parts.push("Technical overview:".to_string());
             }
-        },
+        }
         _ => {} // No introduction for general content
     }
-    
+
     // Add sentences with proper transitions
     for (i, sentence_score) in sentences.iter().enumerate() {
         let mut sentence = sentence_score.sentence.clone();
-        
+
         // Add transitional phrases for better flow
         if i > 0 && summary_parts.len() > 1 {
             if i == sentences.len() - 1 {
                 sentence = format!("Finally, {}", sentence.to_lowercase());
-            } else if sentence_score.importance_indicators.iter().any(|ind| ind == "however" || ind == "nevertheless") {
+            } else if sentence_score
+                .importance_indicators
+                .iter()
+                .any(|ind| ind == "however" || ind == "nevertheless")
+            {
                 // Sentence already has transition
             } else {
                 match i {
@@ -1178,12 +1372,12 @@ fn create_coherent_summary(sentences: Vec<SentenceScore>, content_type: &str) ->
                 }
             }
         }
-        
+
         summary_parts.push(sentence);
     }
-    
+
     let summary = summary_parts.join(" ");
-    
+
     // Ensure proper ending punctuation
     if !summary.ends_with('.') && !summary.ends_with('!') && !summary.ends_with('?') {
         summary + "."
@@ -1198,34 +1392,35 @@ fn create_coherent_summary(sentences: Vec<SentenceScore>, content_type: &str) ->
 pub fn analyze_content(request: ContentAnalysisRequest) -> ContentAnalysisResponse {
     let start_time = ic_cdk::api::time();
     let analyzer = AdvancedTextAnalyzer::new();
-    
+
     // Detect content type
     let (content_type, content_confidence) = analyzer.detect_content_type(&request.text);
-    
+
     // Detect language
     let (language, lang_confidence) = analyzer.detect_language(&request.text);
-    
+
     // Extract entities
     let entities = analyzer.extract_entities(&request.text);
-    
+
     // Analyze sentiment
     let (sentiment, _sentiment_score) = analyzer.analyze_sentiment(&request.text, &language);
-    
+
     // Calculate complexity
     let complexity_score = analyzer.calculate_complexity(&request.text);
-    
+
     // Extract keywords with weights
     let keywords = analyzer.extract_keywords_with_weights(&request.text, &language);
-    
+
     // Extract topics (simplified - use top keywords as topics)
-    let topics: Vec<String> = keywords.iter()
+    let topics: Vec<String> = keywords
+        .iter()
         .take(5)
         .map(|kw| kw.keyword.clone())
         .collect();
-    
+
     // Overall confidence is average of content and language confidence
     let overall_confidence = (content_confidence + lang_confidence) / 2.0;
-    
+
     ContentAnalysisResponse {
         content_type,
         language,
@@ -1244,15 +1439,16 @@ pub fn analyze_content(request: ContentAnalysisRequest) -> ContentAnalysisRespon
 pub fn semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse {
     let start_time = ic_cdk::api::time();
     let analyzer = AdvancedTextAnalyzer::new();
-    
+
     // Analyze the query
-    let query_language = request.language.unwrap_or_else(|| {
-        analyzer.detect_language(&request.text_query).0
-    });
-    
+    let query_language = request
+        .language
+        .unwrap_or_else(|| analyzer.detect_language(&request.text_query).0);
+
     let query_entities = analyzer.extract_entities(&request.text_query);
-    let query_keywords = analyzer.extract_keywords_with_weights(&request.text_query, &query_language);
-    
+    let query_keywords =
+        analyzer.extract_keywords_with_weights(&request.text_query, &query_language);
+
     let query_analysis = QueryAnalysis {
         intent: classify_query_intent(&request.text_query),
         query_type: classify_query_type(&request.text_query),
@@ -1261,43 +1457,40 @@ pub fn semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse
         language: query_language.clone(),
         complexity: analyzer.calculate_complexity(&request.text_query),
     };
-    
+
     // Perform semantic search
     let mut results = Vec::new();
-    
+
     for (idx, content) in request.content_pool.iter().enumerate() {
         let content_keywords = analyzer.extract_keywords_with_weights(content, &query_language);
-        
+
         // Calculate different similarity scores
-        let keyword_similarity = calculate_keyword_similarity(
-            &query_keywords,
-            &content_keywords
-        );
-        
-        let semantic_similarity = calculate_semantic_similarity(
-            &request.text_query,
-            content,
-            &analyzer
-        );
-        
+        let keyword_similarity = calculate_keyword_similarity(&query_keywords, &content_keywords);
+
+        let semantic_similarity =
+            calculate_semantic_similarity(&request.text_query, content, &analyzer);
+
         let context_relevance = if request.search_type == "contextual" {
             calculate_context_relevance(&request.text_query, content, &analyzer)
         } else {
             0.5
         };
-        
+
         // Combine scores based on search type
         let relevance_score = match request.search_type.as_str() {
             "semantic" => semantic_similarity * 0.7 + keyword_similarity * 0.3,
-            "hybrid" => semantic_similarity * 0.4 + keyword_similarity * 0.4 + context_relevance * 0.2,
+            "hybrid" => {
+                semantic_similarity * 0.4 + keyword_similarity * 0.4 + context_relevance * 0.2
+            }
             "contextual" => context_relevance * 0.6 + semantic_similarity * 0.4,
             _ => keyword_similarity * 0.6 + semantic_similarity * 0.4,
         };
-        
-        if relevance_score > 0.1 { // Only include relevant results
+
+        if relevance_score > 0.1 {
+            // Only include relevant results
             let snippet = generate_snippet(content, &request.text_query, 150);
             let highlights = extract_highlights(content, &query_keywords);
-            
+
             results.push(SearchResult {
                 content_id: idx.to_string(),
                 relevance_score,
@@ -1309,13 +1502,13 @@ pub fn semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse
             });
         }
     }
-    
+
     // Sort by relevance score
     results.sort_by(|a, b| b.relevance_score.partial_cmp(&a.relevance_score).unwrap());
-    
+
     // Generate search suggestions
     let suggestions = generate_search_suggestions(&request.text_query, &analyzer);
-    
+
     SemanticSearchResponse {
         results,
         query_analysis,
@@ -1329,18 +1522,19 @@ pub fn semantic_search(request: SemanticSearchRequest) -> SemanticSearchResponse
 pub fn generate_abstract_summary(request: AbstractSummaryRequest) -> AbstractSummaryResponse {
     let start_time = ic_cdk::api::time();
     let analyzer = AdvancedTextAnalyzer::new();
-    
-    let language = request.language.unwrap_or_else(|| {
-        analyzer.detect_language(&request.text).0
-    });
-    
+
+    let language = request
+        .language
+        .unwrap_or_else(|| analyzer.detect_language(&request.text).0);
+
     // Split into sentences
-    let sentences: Vec<String> = request.text
+    let sentences: Vec<String> = request
+        .text
         .split(&['.', '!', '?'][..])
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty() && s.len() > 10)
         .collect();
-    
+
     if sentences.is_empty() {
         return AbstractSummaryResponse {
             summary: "No content to summarize.".to_string(),
@@ -1353,38 +1547,38 @@ pub fn generate_abstract_summary(request: AbstractSummaryRequest) -> AbstractSum
             processing_time: elapsed_seconds(start_time),
         };
     }
-    
+
     // Extract key concepts
     let keywords = analyzer.extract_keywords_with_weights(&request.text, &language);
-    let key_concepts: Vec<String> = keywords.iter()
+    let key_concepts: Vec<String> = keywords
+        .iter()
         .take(8)
         .map(|kw| kw.keyword.clone())
         .collect();
-    
+
     let target_length = request.target_length.unwrap_or(3) as usize;
     let summary_style = request.style.unwrap_or_else(|| "formal".to_string());
-    
-    let (summary, original_sentences, generated_sentences, abstraction_level) = 
-        match request.summary_type.as_str() {
-            "abstractive" => generate_abstractive_summary(
-                &sentences, 
-                &key_concepts, 
-                target_length, 
-                &summary_style
-            ),
-            "hybrid" => generate_hybrid_summary(
-                &sentences, 
-                &key_concepts, 
-                target_length, 
-                &summary_style,
-                &analyzer
-            ),
-            _ => generate_extractive_summary(&sentences, target_length, &analyzer),
-        };
-    
+
+    let (summary, original_sentences, generated_sentences, abstraction_level) = match request
+        .summary_type
+        .as_str()
+    {
+        "abstractive" => {
+            generate_abstractive_summary(&sentences, &key_concepts, target_length, &summary_style)
+        }
+        "hybrid" => generate_hybrid_summary(
+            &sentences,
+            &key_concepts,
+            target_length,
+            &summary_style,
+            &analyzer,
+        ),
+        _ => generate_extractive_summary(&sentences, target_length, &analyzer),
+    };
+
     // Calculate coherence score
     let coherence_score = calculate_coherence_score(&summary, &analyzer);
-    
+
     AbstractSummaryResponse {
         summary,
         original_sentences,
@@ -1407,27 +1601,29 @@ pub fn learn_from_user_feedback(user_id: String, user_feedback: UserFeedback) ->
         content_types: vec!["general".to_string()],
         feedback_history: vec![],
     };
-    
+
     // Add new feedback to history
     user_prefs.feedback_history.push(user_feedback);
-    
+
     // Simple learning: adjust preferences based on feedback type
     if user_prefs.feedback_history.len() > 5 {
-        let likes = user_prefs.feedback_history.iter()
+        let likes = user_prefs
+            .feedback_history
+            .iter()
             .filter(|f| f.action == "like")
             .count();
-        
+
         if likes > user_prefs.feedback_history.len() / 2 {
             user_prefs.summary_style = "detailed".to_string();
         }
     }
-    
+
     user_prefs
 }
 
 pub fn personalized_search(request: PersonalizedSearchRequest) -> PersonalizedSearchResponse {
     let start_time = ic_cdk::api::time();
-    
+
     // For demo purposes, create default preferences
     let user_prefs = UserPreferences {
         preferred_languages: vec!["en".to_string()],
@@ -1436,7 +1632,7 @@ pub fn personalized_search(request: PersonalizedSearchRequest) -> PersonalizedSe
         content_types: vec!["general".to_string()],
         feedback_history: vec![],
     };
-    
+
     // First, perform traditional semantic search
     let semantic_request = SemanticSearchRequest {
         text_query: request.search_query.clone(),
@@ -1445,9 +1641,9 @@ pub fn personalized_search(request: PersonalizedSearchRequest) -> PersonalizedSe
         language: Some("en".to_string()),
         user_feedback: None, // Simplified - no feedback integration for now
     };
-    
+
     let semantic_response = semantic_search(semantic_request);
-    
+
     if !semantic_response.success {
         return PersonalizedSearchResponse {
             results: vec![],
@@ -1459,17 +1655,19 @@ pub fn personalized_search(request: PersonalizedSearchRequest) -> PersonalizedSe
             processing_time: elapsed_seconds(start_time),
         };
     }
-    
+
     // Apply personalization if enabled
     let personalized_results = if request.use_personalization {
         personalize_search_results(
             semantic_response.results,
             &user_prefs,
-            request.context.as_ref()
+            request.context.as_ref(),
         )
     } else {
         // Convert to personalized format without personalization
-        semantic_response.results.into_iter()
+        semantic_response
+            .results
+            .into_iter()
             .map(|result| PersonalizedSearchResult {
                 content_id: result.content_id,
                 base_relevance_score: result.relevance_score,
@@ -1484,13 +1682,13 @@ pub fn personalized_search(request: PersonalizedSearchRequest) -> PersonalizedSe
             })
             .collect()
     };
-    
+
     // Generate learning insights
     let learning_insights = vec!["Search completed successfully".to_string()];
-    
+
     // Generate personalized suggestions
     let suggestions = generate_personalized_suggestions(&request.search_query, &user_prefs);
-    
+
     PersonalizedSearchResponse {
         results: personalized_results,
         personalization_applied: request.use_personalization,
@@ -1517,44 +1715,50 @@ pub fn get_user_insights(user_id: String) -> UserPreferences {
 // Helper function for updating user preferences
 fn update_preferences_from_patterns(user_prefs: &mut UserPreferences) {
     // Simple preference updates based on feedback history
-    let like_count = user_prefs.feedback_history.iter()
+    let like_count = user_prefs
+        .feedback_history
+        .iter()
         .filter(|f| f.action == "like")
         .count();
-    
+
     let total_feedback = user_prefs.feedback_history.len();
-    
+
     // Adjust summary style based on feedback patterns
     if total_feedback > 3 && like_count as f64 / total_feedback as f64 > 0.7 {
         user_prefs.summary_style = "detailed".to_string();
     }
-    
+
     // Simple content type learning from feedback context
-    let doc_mentions = user_prefs.feedback_history.iter()
+    let doc_mentions = user_prefs
+        .feedback_history
+        .iter()
         .filter(|f| f.context.as_ref().map_or(false, |c| c.contains("document")))
         .count();
-    
-    if doc_mentions > total_feedback / 2 && !user_prefs.content_types.contains(&"document".to_string()) {
+
+    if doc_mentions > total_feedback / 2
+        && !user_prefs.content_types.contains(&"document".to_string())
+    {
         user_prefs.content_types.push("document".to_string());
     }
 }
 
 fn generate_personalized_suggestions(query: &str, user_prefs: &UserPreferences) -> Vec<String> {
     let mut suggestions = Vec::new();
-    
+
     // Simple suggestions based on content types
     for content_type in &user_prefs.content_types {
         if !query.to_lowercase().contains(&content_type.to_lowercase()) {
             suggestions.push(format!("{} {}", query, content_type));
         }
     }
-    
+
     // Language-based suggestions
     for lang in &user_prefs.preferred_languages {
         if lang != "en" && !query.contains(lang) {
             suggestions.push(format!("{} in {}", query, lang));
         }
     }
-    
+
     suggestions.truncate(5); // Limit to 5 suggestions
     suggestions
 }
@@ -1562,10 +1766,15 @@ fn generate_personalized_suggestions(query: &str, user_prefs: &UserPreferences) 
 // Helper function for simple complexity calculation
 fn calculate_simple_query_complexity(text: &str) -> f64 {
     let words = text.split_whitespace().count();
-    let avg_word_length = text.chars().filter(|c| !c.is_whitespace()).count() as f64 / words.max(1) as f64;
-    let sentences = text.split(&['.', '!', '?'][..]).filter(|s| !s.trim().is_empty()).count().max(1);
+    let avg_word_length =
+        text.chars().filter(|c| !c.is_whitespace()).count() as f64 / words.max(1) as f64;
+    let sentences = text
+        .split(&['.', '!', '?'][..])
+        .filter(|s| !s.trim().is_empty())
+        .count()
+        .max(1);
     let avg_sentence_length = words as f64 / sentences as f64;
-    
+
     // Normalize complexity score between 0 and 1
     ((avg_word_length / 10.0) + (avg_sentence_length / 20.0)).min(1.0)
 }
@@ -1573,13 +1782,20 @@ fn calculate_simple_query_complexity(text: &str) -> f64 {
 // Helper Functions for query classification
 fn classify_query_intent(query: &str) -> String {
     let query_lower = query.to_lowercase();
-    
-    if query_lower.contains("?") || query_lower.starts_with("what") || 
-       query_lower.starts_with("how") || query_lower.starts_with("why") ||
-       query_lower.starts_with("when") || query_lower.starts_with("where") {
+
+    if query_lower.contains("?")
+        || query_lower.starts_with("what")
+        || query_lower.starts_with("how")
+        || query_lower.starts_with("why")
+        || query_lower.starts_with("when")
+        || query_lower.starts_with("where")
+    {
         "question".to_string()
-    } else if query_lower.contains("find") || query_lower.contains("search") ||
-              query_lower.contains("show") || query_lower.contains("list") {
+    } else if query_lower.contains("find")
+        || query_lower.contains("search")
+        || query_lower.contains("show")
+        || query_lower.contains("list")
+    {
         "search".to_string()
     } else {
         "command".to_string()
@@ -1588,26 +1804,35 @@ fn classify_query_intent(query: &str) -> String {
 
 fn classify_query_type(query: &str) -> String {
     let query_lower = query.to_lowercase();
-    
-    if query_lower.contains("how to") || query_lower.contains("steps") ||
-       query_lower.contains("process") || query_lower.contains("procedure") {
+
+    if query_lower.contains("how to")
+        || query_lower.contains("steps")
+        || query_lower.contains("process")
+        || query_lower.contains("procedure")
+    {
         "procedural".to_string()
-    } else if query_lower.contains("concept") || query_lower.contains("idea") ||
-              query_lower.contains("theory") || query_lower.contains("principle") {
+    } else if query_lower.contains("concept")
+        || query_lower.contains("idea")
+        || query_lower.contains("theory")
+        || query_lower.contains("principle")
+    {
         "conceptual".to_string()
     } else {
         "factual".to_string()
     }
 }
 
-fn calculate_keyword_similarity(query_keywords: &[KeywordWithWeight], content_keywords: &[KeywordWithWeight]) -> f64 {
+fn calculate_keyword_similarity(
+    query_keywords: &[KeywordWithWeight],
+    content_keywords: &[KeywordWithWeight],
+) -> f64 {
     if query_keywords.is_empty() || content_keywords.is_empty() {
         return 0.0;
     }
-    
+
     let mut similarity = 0.0;
     let mut total_weight = 0.0;
-    
+
     for q_kw in query_keywords {
         total_weight += q_kw.weight;
         for c_kw in content_keywords {
@@ -1618,7 +1843,7 @@ fn calculate_keyword_similarity(query_keywords: &[KeywordWithWeight], content_ke
             }
         }
     }
-    
+
     if total_weight > 0.0 {
         similarity / total_weight
     } else {
@@ -1626,34 +1851,38 @@ fn calculate_keyword_similarity(query_keywords: &[KeywordWithWeight], content_ke
     }
 }
 
-fn calculate_semantic_similarity(query: &str, content: &str, analyzer: &AdvancedTextAnalyzer) -> f64 {
+fn calculate_semantic_similarity(
+    query: &str,
+    content: &str,
+    analyzer: &AdvancedTextAnalyzer,
+) -> f64 {
     // Simplified semantic similarity using word overlap and context
     let query_lowercase = query.to_lowercase();
     let content_lowercase = content.to_lowercase();
     let query_words: Vec<&str> = query_lowercase.split_whitespace().collect();
     let content_words: Vec<&str> = content_lowercase.split_whitespace().collect();
-    
+
     let mut overlap = 0;
     for q_word in &query_words {
         if content_words.contains(q_word) {
             overlap += 1;
         }
     }
-    
+
     let base_similarity = overlap as f64 / query_words.len().max(1) as f64;
-    
+
     // Boost similarity if content type matches query intent
     let content_complexity = analyzer.calculate_complexity(content);
     let query_complexity = analyzer.calculate_complexity(query);
     let complexity_similarity = 1.0 - (content_complexity - query_complexity).abs();
-    
+
     (base_similarity * 0.7 + complexity_similarity * 0.3).min(1.0)
 }
 
 fn calculate_context_relevance(query: &str, content: &str, analyzer: &AdvancedTextAnalyzer) -> f64 {
     let query_entities = analyzer.extract_entities(query);
     let content_entities = analyzer.extract_entities(content);
-    
+
     let mut entity_overlap = 0;
     for q_entity in &query_entities {
         for c_entity in &content_entities {
@@ -1662,54 +1891,58 @@ fn calculate_context_relevance(query: &str, content: &str, analyzer: &AdvancedTe
             }
         }
     }
-    
+
     let entity_similarity = if !query_entities.is_empty() {
         entity_overlap as f64 / query_entities.len() as f64
     } else {
         0.5
     };
-    
+
     // Consider content type relevance
     let (query_type, _) = analyzer.detect_content_type(query);
     let (content_type, _) = analyzer.detect_content_type(content);
-    
+
     let type_similarity = if query_type == content_type { 1.0 } else { 0.3 };
-    
+
     (entity_similarity * 0.6 + type_similarity * 0.4).min(1.0)
 }
 
 fn generate_snippet(content: &str, query: &str, max_length: usize) -> String {
-    let query_words: Vec<String> = query.to_lowercase()
+    let query_words: Vec<String> = query
+        .to_lowercase()
         .split_whitespace()
         .map(|s| s.to_string())
         .collect();
-    
+
     let sentences: Vec<&str> = content.split(&['.', '!', '?'][..]).collect();
     let mut best_sentence = "";
     let mut best_score = 0;
-    
+
     for sentence in &sentences {
         let sentence_lower = sentence.to_lowercase();
         let mut score = 0;
-        
+
         for word in &query_words {
             if sentence_lower.contains(word) {
                 score += 1;
             }
         }
-        
+
         if score > best_score {
             best_score = score;
             best_sentence = *sentence;
         }
     }
-    
+
     if best_sentence.is_empty() {
         best_sentence = sentences.first().unwrap_or(&"");
     }
-    
+
     if best_sentence.len() > max_length {
-        format!("{}...", &best_sentence[..max_length.min(best_sentence.len())])
+        format!(
+            "{}...",
+            &best_sentence[..max_length.min(best_sentence.len())]
+        )
     } else {
         best_sentence.to_string()
     }
@@ -1718,87 +1951,91 @@ fn generate_snippet(content: &str, query: &str, max_length: usize) -> String {
 fn extract_highlights(content: &str, keywords: &[KeywordWithWeight]) -> Vec<String> {
     let content_lower = content.to_lowercase();
     let mut highlights = Vec::new();
-    
+
     for keyword in keywords.iter().take(5) {
         if content_lower.contains(&keyword.keyword) {
             highlights.push(keyword.keyword.clone());
         }
     }
-    
+
     highlights
 }
 
 fn generate_search_suggestions(query: &str, analyzer: &AdvancedTextAnalyzer) -> Vec<String> {
     let keywords = analyzer.extract_keywords_with_weights(query, "en");
     let mut suggestions = Vec::new();
-    
+
     // Generate suggestions based on keywords
     for keyword in keywords.iter().take(3) {
         suggestions.push(format!("Search for more about {}", keyword.keyword));
         suggestions.push(format!("Find related content to {}", keyword.keyword));
     }
-    
+
     // Add generic suggestions
     suggestions.push("Try using different keywords".to_string());
     suggestions.push("Search by content type".to_string());
-    
+
     suggestions.truncate(5);
     suggestions
 }
 
-fn generate_extractive_summary(sentences: &[String], target_length: usize, analyzer: &AdvancedTextAnalyzer) -> (String, Vec<String>, Vec<String>, f64) {
+fn generate_extractive_summary(
+    sentences: &[String],
+    target_length: usize,
+    analyzer: &AdvancedTextAnalyzer,
+) -> (String, Vec<String>, Vec<String>, f64) {
     // Score sentences based on position, length, and keyword density
     let mut sentence_scores: Vec<(usize, f64)> = Vec::new();
-    
+
     for (idx, sentence) in sentences.iter().enumerate() {
         let mut score = 0.0;
-        
+
         // Position score (first and last sentences are important)
         if idx == 0 || idx == sentences.len() - 1 {
             score += 2.0;
         }
-        
+
         // Length score (not too short, not too long)
         let length = sentence.split_whitespace().count();
         if length >= 5 && length <= 25 {
             score += 1.0;
         }
-        
+
         // Keyword density
         let keywords = analyzer.extract_keywords_with_weights(sentence, "en");
         score += keywords.len() as f64 * 0.1;
-        
+
         sentence_scores.push((idx, score));
     }
-    
+
     // Sort by score and select top sentences
     sentence_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-    
+
     let selected_indices: Vec<usize> = sentence_scores
         .iter()
         .take(target_length)
         .map(|(idx, _)| *idx)
         .collect();
-    
+
     let mut selected_sentences = Vec::new();
     for &idx in &selected_indices {
         selected_sentences.push(sentences[idx].clone());
     }
-    
+
     let summary = selected_sentences.join(". ");
-    
+
     (summary, selected_sentences, vec![], 0.2) // Low abstraction level for extractive
 }
 
 fn generate_abstractive_summary(
-    sentences: &[String], 
-    key_concepts: &[String], 
-    target_length: usize, 
-    style: &str
+    sentences: &[String],
+    key_concepts: &[String],
+    target_length: usize,
+    style: &str,
 ) -> (String, Vec<String>, Vec<String>, f64) {
     // Generate new sentences based on key concepts
     let mut generated_sentences = Vec::new();
-    
+
     // Simple template-based generation (in a real implementation, this would use a language model)
     if !key_concepts.is_empty() {
         let intro = match style {
@@ -1807,51 +2044,57 @@ fn generate_abstractive_summary(
             _ => format!("The main topic discusses {}.", key_concepts[0]),
         };
         generated_sentences.push(intro);
-        
+
         if key_concepts.len() > 1 && target_length > 1 {
-            let middle = format!("Key aspects include {} and {}.", 
-                key_concepts.get(1).unwrap_or(&"related concepts".to_string()),
-                key_concepts.get(2).unwrap_or(&"associated topics".to_string())
+            let middle = format!(
+                "Key aspects include {} and {}.",
+                key_concepts
+                    .get(1)
+                    .unwrap_or(&"related concepts".to_string()),
+                key_concepts
+                    .get(2)
+                    .unwrap_or(&"associated topics".to_string())
             );
             generated_sentences.push(middle);
         }
-        
+
         if target_length > 2 {
             let conclusion = match style {
                 "casual" => "Overall, it covers the main points effectively.".to_string(),
-                "technical" => "The analysis demonstrates comprehensive coverage of the subject matter.".to_string(),
+                "technical" => {
+                    "The analysis demonstrates comprehensive coverage of the subject matter."
+                        .to_string()
+                }
                 _ => "In conclusion, the content addresses the essential elements.".to_string(),
             };
             generated_sentences.push(conclusion);
         }
     }
-    
+
     let summary = generated_sentences.join(" ");
-    
+
     (summary, vec![], generated_sentences, 0.8) // High abstraction level for abstractive
 }
 
 fn generate_hybrid_summary(
-    sentences: &[String], 
-    key_concepts: &[String], 
-    target_length: usize, 
+    sentences: &[String],
+    key_concepts: &[String],
+    target_length: usize,
     style: &str,
-    analyzer: &AdvancedTextAnalyzer
+    analyzer: &AdvancedTextAnalyzer,
 ) -> (String, Vec<String>, Vec<String>, f64) {
     // Combine extractive and abstractive approaches
     let extract_count = target_length / 2;
     let generate_count = target_length - extract_count;
-    
+
     // Get extractive summary
-    let (extractive_part, original_sentences, _, _) = generate_extractive_summary(
-        sentences, extract_count, analyzer
-    );
-    
+    let (extractive_part, original_sentences, _, _) =
+        generate_extractive_summary(sentences, extract_count, analyzer);
+
     // Get abstractive summary
-    let (abstractive_part, _, generated_sentences, _) = generate_abstractive_summary(
-        sentences, key_concepts, generate_count, style
-    );
-    
+    let (abstractive_part, _, generated_sentences, _) =
+        generate_abstractive_summary(sentences, key_concepts, generate_count, style);
+
     // Combine both
     let combined_summary = if !extractive_part.is_empty() && !abstractive_part.is_empty() {
         format!("{}. {}", abstractive_part, extractive_part)
@@ -1860,26 +2103,31 @@ fn generate_hybrid_summary(
     } else {
         abstractive_part
     };
-    
-    (combined_summary, original_sentences, generated_sentences, 0.5) // Medium abstraction level
+
+    (
+        combined_summary,
+        original_sentences,
+        generated_sentences,
+        0.5,
+    ) // Medium abstraction level
 }
 
 fn calculate_coherence_score(summary: &str, analyzer: &AdvancedTextAnalyzer) -> f64 {
     let sentences: Vec<&str> = summary.split(&['.', '!', '?'][..]).collect();
-    
+
     if sentences.len() < 2 {
         return 1.0;
     }
-    
+
     let mut coherence_sum = 0.0;
     let mut comparisons = 0;
-    
-    for i in 0..sentences.len()-1 {
-        let similarity = calculate_sentence_similarity(sentences[i], sentences[i+1], analyzer);
+
+    for i in 0..sentences.len() - 1 {
+        let similarity = calculate_sentence_similarity(sentences[i], sentences[i + 1], analyzer);
         coherence_sum += similarity;
         comparisons += 1;
     }
-    
+
     if comparisons > 0 {
         coherence_sum / comparisons as f64
     } else {
@@ -1888,19 +2136,21 @@ fn calculate_coherence_score(summary: &str, analyzer: &AdvancedTextAnalyzer) -> 
 }
 
 fn calculate_sentence_similarity(sent1: &str, sent2: &str, analyzer: &AdvancedTextAnalyzer) -> f64 {
-    let words1: HashSet<String> = sent1.to_lowercase()
+    let words1: HashSet<String> = sent1
+        .to_lowercase()
         .split_whitespace()
         .map(|s| s.to_string())
         .collect();
-    
-    let words2: HashSet<String> = sent2.to_lowercase()
+
+    let words2: HashSet<String> = sent2
+        .to_lowercase()
         .split_whitespace()
         .map(|s| s.to_string())
         .collect();
-    
+
     let intersection: HashSet<_> = words1.intersection(&words2).collect();
     let union: HashSet<_> = words1.union(&words2).collect();
-    
+
     if union.is_empty() {
         0.0
     } else {
@@ -1920,10 +2170,10 @@ mod tests {
     // Test-specific version of summarize_text that doesn't rely on IC time
     fn test_summarize_text(request: SummaryRequest) -> SummaryResponse {
         let start_time = mock_time();
-        
+
         let text = request.text;
         let content_type = request.content_type.unwrap_or("general".to_string());
-        
+
         // Handle very short texts
         if text.len() < 100 {
             return SummaryResponse {
@@ -1935,7 +2185,7 @@ mod tests {
                 error: None,
             };
         }
-        
+
         // Use enhanced summarization
         let summary = match enhanced_summarize(&text, &content_type) {
             Ok(s) => s,
@@ -1950,9 +2200,9 @@ mod tests {
                 };
             }
         };
-        
+
         let compression_ratio = summary.len() as f64 / text.len() as f64;
-        
+
         SummaryResponse {
             summary,
             success: true,
@@ -1971,7 +2221,7 @@ mod tests {
         };
 
         let response = test_summarize_text(request);
-        
+
         assert!(response.success);
         assert!(response.summary.len() > 0);
         println!("Meeting Summary: {}", response.summary);
@@ -1985,7 +2235,7 @@ mod tests {
         };
 
         let response = test_summarize_text(request);
-        
+
         assert!(response.success);
         assert!(response.summary.len() > 0);
         println!("Technical Summary: {}", response.summary);
@@ -1999,7 +2249,7 @@ mod tests {
         };
 
         let response = test_summarize_text(request);
-        
+
         assert!(response.success);
         assert!(response.summary.len() > 0);
         println!("Research Summary: {}", response.summary);
@@ -2031,59 +2281,64 @@ mod tests {
     #[test]
     fn test_sentence_scoring() {
         let analyzer = TextAnalyzer::new();
-        
+
         // Test importance indicator scoring
-        let important_sentence = "This is a crucial decision that will impact the project significantly.";
+        let important_sentence =
+            "This is a crucial decision that will impact the project significantly.";
         let normal_sentence = "The weather was nice yesterday.";
-        
+
         let important_score = analyzer.score_sentence(important_sentence, 0, 5, "general");
         let normal_score = analyzer.score_sentence(normal_sentence, 2, 5, "general");
-        
+
         assert!(important_score.score > normal_score.score);
     }
 
     #[test]
     fn test_redundancy_removal() {
         let analyzer = TextAnalyzer::new();
-        
+
         // Test with sentences that have enough overlap (need more similarity)
         let similar1 = "The project deadline is next Friday";
         let similar2 = "The project deadline is next Friday";
-        
+
         assert!(sentences_are_similar(similar1, similar2));
-        
+
         let different1 = "The weather is sunny today";
         let different2 = "The project deadline is next Friday";
-        
+
         assert!(!sentences_are_similar(different1, different2));
-        
+
         // Test with actual similar sentences (more than 60% overlap)
         let similar3 = "The important meeting discussed project timelines";
         let similar4 = "The meeting discussed important project timelines";
-        
+
         assert!(sentences_are_similar(similar3, similar4));
     }
 
     #[test]
     fn test_text_analyzer_creation() {
         let analyzer = TextAnalyzer::new();
-        
+
         // Test that stop words are loaded
         assert!(analyzer.stop_words.contains("the"));
         assert!(analyzer.stop_words.contains("and"));
-        
+
         // Test that importance indicators are loaded
-        assert!(analyzer.importance_indicators.contains(&"important".to_string()));
-        assert!(analyzer.importance_indicators.contains(&"crucial".to_string()));
+        assert!(analyzer
+            .importance_indicators
+            .contains(&"important".to_string()));
+        assert!(analyzer
+            .importance_indicators
+            .contains(&"crucial".to_string()));
     }
 
     #[test]
     fn test_sentence_splitting() {
         let analyzer = TextAnalyzer::new();
-        
+
         let text = "This is the first sentence. This is the second sentence! Is this the third sentence? This is the fourth.";
         let sentences = analyzer.split_into_sentences(text);
-        
+
         assert_eq!(sentences.len(), 4);
         assert_eq!(sentences[0], "This is the first sentence");
         assert_eq!(sentences[1], "This is the second sentence");
