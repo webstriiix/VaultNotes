@@ -28,10 +28,10 @@ import { encrypted_notes_backend } from "../../../../declarations/encrypted-note
 import AISummary from "../../components/ai/AISummary"; // ✅ AI Summary component
 import SearchIntegration from "../../components/commons/SearchIntegration";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
-import { CryptoService } from "../../utils/encryption";
 import DeleteNoteModal from "./DeleteNoteModal";
 import ShareEditNoteModal from "./ShareEditNoteModal";
 import ShareReadNoteModal from "./ShareReadNoteModal";
+import { toast } from "react-toastify";
 
 const Notes = () => {
     const navigate = useNavigate();
@@ -71,6 +71,7 @@ const Notes = () => {
             setNotes((prev) => prev.filter((n) => n.id !== deleteNoteId));
         } catch (err) {
             console.error("Failed to delete note:", err);
+            toast.error("Error");
         } finally {
             setIsDeleteModalOpen(false);
             setDeleteNoteId(null);
@@ -108,42 +109,33 @@ const Notes = () => {
 
             try {
                 setLoading(true);
-                const actor = encrypted_notes_backend;
-                Actor.agentOf(actor).replaceIdentity(identity);
-                const rawNotes = await actor.read_notes();
+                Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
+                const rawNotes = await encrypted_notes_backend.read_notes();
 
-                const cryptoService = new CryptoService(actor, identity);
-                const decrypted = await Promise.all(
-                    rawNotes.map(async (n) => {
+                const parsedNotes = rawNotes.map((note) => {
+                    let payload = {};
+                    if (note.encrypted) {
                         try {
-                            const decryptedContent = await cryptoService.decryptWithNoteKey(
-                                n.id,
-                                n.owner,
-                                n.encrypted
-                            );
-                            const parsed = JSON.parse(decryptedContent);
-                            return {
-                                id: Number(n.id),
-                                ...parsed,
-                            };
+                            payload = JSON.parse(note.encrypted);
                         } catch (err) {
-                            console.error("Failed to decrypt note", n.id, err);
-                            return {
-                                id: Number(n.id),
-                                title: "Failed to decrypt",
-                                content: "",
-                                tags: [],
-                                category: "unknown",
-                                createdAt: new Date().toISOString(),
-                                updatedAt: new Date().toISOString(),
-                                color: "default",
-                            };
+                            console.warn("Failed to parse note JSON", note.id, err);
                         }
-                    })
-                );
-                setNotes(decrypted);
-                console.log("📝 Notes loaded:", decrypted.length, "notes");
-                console.log("📝 First note ID:", decrypted[0]?.id, typeof decrypted[0]?.id);
+                    }
+
+                    return {
+                        id: Number(note.id),
+                        title: payload.title || "Untitled note",
+                        content: payload.content || "",
+                        tags: payload.tags || [],
+                        category: payload.category || "unknown",
+                        createdAt: payload.createdAt || new Date().toISOString(),
+                        updatedAt: payload.updatedAt || new Date().toISOString(),
+                        color: payload.color || "default",
+                    };
+                });
+
+                setNotes(parsedNotes);
+                console.log("📝 Notes loaded:", parsedNotes.length, "notes");
             } catch (err) {
                 console.error("Failed to fetch notes:", err);
             } finally {

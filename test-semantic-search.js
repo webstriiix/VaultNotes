@@ -10,8 +10,7 @@ const hookStructure = {
   useRef: true,
   useInternetIdentity: true,
   Actor: true,
-  encrypted_notes_backend: true,
-  CryptoService: true
+  encrypted_notes_backend: true
 };
 
 console.log('✅ Hook dependencies structure verified');

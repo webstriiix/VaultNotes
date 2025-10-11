@@ -8,33 +8,34 @@ import AdvancedSearch from '../commons/AdvancedSearch';
  * Provides a button to open the advanced search modal
  */
 const SearchIntegration = ({ onNoteSelect, className = "" }) => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const handleNoteSelect = (result) => {
-    if (onNoteSelect) {
-      onNoteSelect(result);
-    }
-    setIsSearchOpen(false);
-  };
+    const handleNoteSelect = (result) => {
+        if (onNoteSelect) {
+            onNoteSelect(result);
+        }
+        setIsSearchOpen(false);
+    };
 
-  return (
-    <>
-      <Button
-        onPress={() => setIsSearchOpen(true)}
-        variant="bordered"
-        startContent={<IoSearch />}
-        className={`border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 ${className}`}
-      >
-        Advanced Search
-      </Button>
+    return (
+        <>
+            <Button
+                onPress={() => setIsSearchOpen(true)}
+                variant="bordered"
+                startContent={<IoSearch />}
+                className={`border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 ${className}`}
+                disabled={true}
+            >
+                Advanced Search
+            </Button>
 
-      <AdvancedSearch
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        onResultSelect={handleNoteSelect}
-      />
-    </>
-  );
+            <AdvancedSearch
+                isOpen={isSearchOpen}
+                onClose={() => setIsSearchOpen(false)}
+                onResultSelect={handleNoteSelect}
+            />
+        </>
+    );
 };
 
 export default SearchIntegration;

@@ -27,7 +27,6 @@ import { toast } from "react-toastify"; // ✅ ditambahkan
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import AISummary from "../../components/ai/AISummary"; // ✅ AI Summary component
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
-import { CryptoService } from "../../utils/encryption";
 
 const CreateNote = () => {
   const [title, setTitle] = useState("");
@@ -124,26 +123,10 @@ const CreateNote = () => {
       };
       const plaintext = JSON.stringify(noteData);
 
-      console.log("[1/4] Creating empty note on-chain...");
-      const noteIdRaw = await encrypted_notes_backend.create_note("");
-      const noteId = BigInt(noteIdRaw);
+      console.log("[1/1] Saving note on-chain (plaintext)...");
+      await encrypted_notes_backend.create_note(plaintext);
 
-      console.log("[2/4] Encrypting note locally...");
-      const cryptoService = new CryptoService(
-        encrypted_notes_backend,
-        identity
-      );
-      const owner = identity.getPrincipal().toText();
-      const encryptedBase64 = await cryptoService.encryptWithNoteKey(
-        noteId,
-        owner,
-        plaintext
-      );
-
-      console.log("[3/4] Updating note on-chain with ciphertext...");
-      await encrypted_notes_backend.update_note(noteId, encryptedBase64);
-
-      console.log("[4/4] Done. Note saved on-chain.");
+      console.log("✅ Note stored successfully.");
       toast.success("Note saved successfully");
 
       // Reset form
@@ -155,7 +138,7 @@ const CreateNote = () => {
       navigate("/notes");
     } catch (err) {
       console.error("❌ Failed to save note:", err);
-      toast.error("Failed to save note: " + (err.message || err));
+      toast.error("Error");
     } finally {
       setLoading(false);
     }

@@ -8,59 +8,86 @@ import {
     Button,
     Input,
     Textarea,
+    Chip,
 } from "@heroui/react";
-import { IoPricetag, IoDocumentText, IoCreate } from "react-icons/io5";
+import {
+    IoPricetag,
+    IoDocumentText,
+    IoCreate,
+    IoCheckmarkCircle,
+} from "react-icons/io5";
 
-const MintNFTModal = ({ isOpen, onClose, onMint, existingNft }) => {
+const formatSatsToBtc = (priceOption) => {
+    if (!priceOption || priceOption.length === 0) {
+        return "";
+    }
+    const sats = Number(priceOption[0]);
+    return (sats / 100_000_000).toString();
+};
+
+const MintNFTModal = ({ isOpen, onClose, onMint, existingNft, loading = false }) => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
 
-
     useEffect(() => {
-        if (existingNft) {
-            setTitle(existingNft.title || "");
-            setDescription(existingNft.description || "");
-            setPrice(existingNft.price ? (existingNft.price / 100_000_000).toString() : "");
-        } else {
-            setTitle("");
-            setDescription("");
-            setPrice("");
-        }
-    }, [existingNft, isOpen]);
-
-    const handleMint = () => {
-        if (!title.trim() || !description.trim() || !price.trim()) {
-            alert("⚠️ Please fill in all fields!");
+        if (!isOpen) {
             return;
         }
-        onMint({ title, description, price });
-        onClose();
+
+        setTitle(existingNft?.title ?? "");
+        setDescription(existingNft?.description ?? "");
+        setPrice(formatSatsToBtc(existingNft?.price));
+    }, [isOpen, existingNft]);
+
+    const handleSubmit = () => {
+        if (!title.trim()) {
+            return;
+        }
+
+        onMint({
+            title: title.trim(),
+            description: description.trim(),
+            price: price.trim(),
+        });
     };
+
+    const disableSubmit = loading || !title.trim();
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
             size="lg"
-            backdrop="blur"
-            className="rounded-2xl shadow-2xl border border-[#3C444D] bg-background"
+            className="bg-[#0A0D12]/95 backdrop-blur-md text-foreground"
         >
             <ModalContent>
-                <ModalHeader className="text-2xl font-bold text-foreground flex items-center gap-2">
-                    <IoCreate className="text-primary" />
-                    {existingNft ? "Update NFT" : "Mint Note as NFT"}
+                <ModalHeader className="flex flex-col gap-1">
+                    {existingNft ? "Update ICP NFT" : "Mint ICP NFT"}
                 </ModalHeader>
-
                 <ModalBody className="space-y-5">
-                    {/* Title */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                            <IoDocumentText className="text-secondary" /> NFT Title
+                    {existingNft && (
+                        <div className="flex flex-col gap-2 rounded-xl border border-success/20 bg-success/10 p-3 text-sm text-success">
+                            <div className="flex items-center gap-2">
+                                <IoCheckmarkCircle />
+                                <span>This note already has an on-chain NFT.</span>
+                            </div>
+                            {existingNft.pointer && (
+                                <p className="text-xs text-default-500 break-all">
+                                    {existingNft.pointer}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <IoDocumentText className="text-primary" />
+                            NFT Title
                         </label>
                         <Input
-                            placeholder="Enter a short NFT title..."
                             value={title}
+                            placeholder="Encrypted Note #42"
                             onChange={(e) => setTitle(e.target.value)}
                             size="lg"
                             variant="bordered"
@@ -71,32 +98,32 @@ const MintNFTModal = ({ isOpen, onClose, onMint, existingNft }) => {
                         />
                     </div>
 
-                    {/* Description */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                            <IoDocumentText className="text-warning" /> NFT Description
+                    <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <IoCreate className="text-secondary" />
+                            Short Description
                         </label>
                         <Textarea
-                            placeholder="Write a short description about this note..."
                             value={description}
+                            placeholder="Describe what this encrypted note contains..."
                             onChange={(e) => setDescription(e.target.value)}
-                            minRows={4}
+                            minRows={3}
                             variant="bordered"
                             classNames={{
                                 input: "text-sm leading-relaxed",
-                                inputWrapper: "border-[#3C444D] shadow-sm rounded-xl",
+                                inputWrapper: "border-[#3C444D] rounded-xl",
                             }}
                         />
                     </div>
 
-                    {/* Price */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                            <IoPricetag className="text-success" /> Price (in BTC sats)
+                        <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <IoPricetag className="text-success" />
+                            Price (in ckBTC)
                         </label>
                         <Input
                             type="number"
-                            placeholder="1000"
+                            placeholder="0.0001"
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
                             size="lg"
@@ -106,21 +133,31 @@ const MintNFTModal = ({ isOpen, onClose, onMint, existingNft }) => {
                                 inputWrapper: "border-[#3C444D] shadow-sm rounded-xl h-12",
                             }}
                         />
+                        <p className="text-xs text-default-500">
+                            Leave empty to keep the NFT unlisted.
+                        </p>
                     </div>
-                </ModalBody>
 
-                <ModalFooter>
+                    {existingNft?.listed && (
+                        <Chip size="sm" color="warning" variant="flat">
+                            Currently listed on the ICP marketplace
+                        </Chip>
+                    )}
+                </ModalBody>
+                <ModalFooter className="flex gap-3">
                     <Button
                         variant="bordered"
                         onPress={onClose}
-                        className="rounded-xl border border-[#3C444D] px-6"
+                        className="flex-1 rounded-xl border border-[#3C444D] px-6"
                     >
                         Cancel
                     </Button>
                     <Button
                         color="primary"
-                        onPress={handleMint}
-                        className="rounded-xl shadow-lg px-6"
+                        onPress={handleSubmit}
+                        className="flex-1 rounded-xl shadow-lg px-6"
+                        isDisabled={disableSubmit}
+                        isLoading={loading}
                     >
                         {existingNft ? "Update NFT" : "Mint NFT"}
                     </Button>
@@ -131,4 +168,3 @@ const MintNFTModal = ({ isOpen, onClose, onMint, existingNft }) => {
 };
 
 export default MintNFTModal;
-

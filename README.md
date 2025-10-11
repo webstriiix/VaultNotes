@@ -105,6 +105,8 @@ cd ../..
 dfx canister call encrypted-notes-backend ai_health_check
 ```
 
+> 🪙 **ckBTC locally?** Follow [`docs/LOCAL_CKBTC.md`](docs/LOCAL_CKBTC.md) to deploy the ICRC‑1 ledger used during development and point the backend at it.
+
 🎉 **That's it!** Your VaultNotes instance is now running locally.
 
 ### 🌐 **Access URLs**
