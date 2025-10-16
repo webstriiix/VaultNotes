@@ -19,7 +19,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  useDisclosure
+  
 } from '@heroui/react';
 import {
   IoSearch,
@@ -32,14 +32,16 @@ import {
   IoTrendingUp,
   IoDocument,
   IoRefresh,
-  IoChevronDown
+  IoChevronDown,
+  IoEllipsisVertical
 } from 'react-icons/io5';
 import useSemanticSearch from '../../hooks/useSemanticSearch';
 import { useNavigate } from 'react-router-dom';
 
 const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
   const navigate = useNavigate();
-  const { isOpen: isSettingsOpen, onOpen: onSettingsOpen, onClose: onSettingsClose } = useDisclosure();
+  // Settings modal state (replaces useDisclosure for simpler control)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const {
     isSearching,
@@ -158,7 +160,6 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
 
   return (
     <>
-      {/* Main Search Modal */}
       <Modal
         isOpen={isOpen}
         onClose={onClose}
@@ -183,27 +184,42 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  isIconOnly
-                  variant="ghost"
-                  size="sm"
-                  onPress={onSettingsOpen}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <IoOptions />
-                </Button>
-                <Button
-                  isIconOnly
-                  variant="ghost"
-                  size="sm"
-                  onPress={onClose}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <IoClose />
-                </Button>
+                {/* Consolidated Kebab Menu for Settings and Close */}
+                <Dropdown placement="bottom-end">
+                  <DropdownTrigger>
+                    <Button
+                      isIconOnly
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <IoEllipsisVertical className="text-xl" />
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    aria-label="Search actions"
+                    onAction={(key) => {
+                      if (key === 'settings') setIsSettingsOpen(true);
+                      if (key === 'close') onClose();
+                    }}
+                  >
+                    <DropdownItem key="settings">
+                      <div className="flex items-center gap-2">
+                        <IoOptions />
+                        Settings
+                      </div>
+                    </DropdownItem>
+                    <DropdownItem key="close" className="text-danger" color="danger">
+                      <div className="flex items-center gap-2">
+                        <IoClose />
+                        Close
+                      </div>
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
               </div>
             </div>
-            
+
             {indexStatus === 'error' && (
               <div className="text-red-400 text-sm">
                 Search index error. Try refreshing the index.
@@ -213,17 +229,18 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
 
           <ModalBody>
             <div className="space-y-6">
-              {/* Search Input */}
-              <div className="space-y-3">
+              {/* Search Input and Main Action */}
+              <div className="flex gap-2">
                 <Input
                   placeholder="Search your encrypted notes..."
                   value={searchQuery}
                   onValueChange={handleSearchChange}
                   startContent={<IoSearch className="text-gray-400" />}
                   endContent={
-                    <div className="flex items-center gap-2">
-                      {isSearching && <Spinner size="sm" />}
-                      {searchQuery && (
+                    isSearching ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      searchQuery && (
                         <Button
                           isIconOnly
                           variant="ghost"
@@ -235,58 +252,59 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                         >
                           <IoClose />
                         </Button>
-                      )}
-                    </div>
+                      )
+                    )
                   }
                   classNames={{
-                    base: "w-full",
+                    base: "flex-grow",
                     mainWrapper: "h-full",
                     input: "text-lg",
                     inputWrapper: "h-12 bg-gray-800/50 border-gray-600 data-[hover=true]:border-gray-500 group-data-[focus=true]:border-blue-400"
                   }}
                 />
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Switch
-                      size="sm"
-                      isSelected={isLiveSearch}
-                      onValueChange={setIsLiveSearch}
-                      classNames={{
-                        base: "inline-flex flex-row-reverse w-full max-w-md bg-transparent hover:bg-transparent",
-                        wrapper: "p-0 h-4 overflow-visible",
-                        thumb: "w-6 h-6 border-2 shadow-lg"
-                      }}
-                    >
-                      <span className="text-sm text-gray-400">Live search</span>
-                    </Switch>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onPress={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                      startContent={<IoFilter />}
-                      endContent={<IoChevronDown className={`transition-transform ${showAdvancedOptions ? 'rotate-180' : ''}`} />}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      Filters
-                    </Button>
-                  </div>
-
-                  {!isLiveSearch && (
-                    <Button
-                      color="primary"
-                      onPress={handleSearch}
-                      isLoading={isSearching}
-                      startContent={!isSearching && <IoSearch />}
-                    >
-                      Search
-                    </Button>
-                  )}
-                </div>
+                {!isLiveSearch && (
+                  <Button
+                    color="primary"
+                    onPress={handleSearch}
+                    isLoading={isSearching}
+                    startContent={!isSearching && <IoSearch />}
+                    size="lg" // Make search button more prominent
+                    className="h-12"
+                  >
+                    Search
+                  </Button>
+                )}
               </div>
 
-              {/* Advanced Options */}
+              {/* Live Search & Filters Toggle */}
+              <div className="flex items-center justify-between flex-wrap gap-2 -mt-4"> {/* Adjust margin-top */}
+                <Switch
+                  size="sm"
+                  isSelected={isLiveSearch}
+                  onValueChange={setIsLiveSearch}
+                  classNames={{
+                    base: "inline-flex flex-row-reverse bg-transparent hover:bg-transparent",
+                    wrapper: "p-0 h-4 overflow-visible",
+                    thumb: "w-6 h-6 border-2 shadow-lg"
+                  }}
+                  thumbIcon={null}
+                >
+                  <span className="text-sm text-gray-400">Live search</span>
+                </Switch>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  startContent={<IoFilter />}
+                  endContent={<IoChevronDown className={`transition-transform ${showAdvancedOptions ? 'rotate-180' : ''}`} />}
+                  className="text-gray-400 hover:text-white"
+                >
+                  Filters
+                </Button>
+              </div>
+
+              {/* Advanced Options - Always visible or toggled based on preference */}
               {showAdvancedOptions && (
                 <Card className="bg-gray-800/30 border-gray-700">
                   <CardBody className="space-y-4">
@@ -299,22 +317,40 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                             size="sm"
                             isSelected={searchOptions.searchTitle}
                             onValueChange={(value) => handleOptionChange('searchTitle', value)}
+                            classNames={{
+                                wrapper: "group-data-[selected=true]:bg-blue-600",
+                                thumb: "group-data-[selected=true]:ml-4",
+                                startContent: "ml-0" // Remove extra margin
+                            }}
+                            thumbIcon={null}
                           >
-                            <span className="text-sm text-gray-400">Search in titles</span>
+                            <span className="text-sm text-gray-400 ml-2">Search in titles</span> {/* Added ml-2 */}
                           </Switch>
                           <Switch
                             size="sm"
                             isSelected={searchOptions.searchContent}
                             onValueChange={(value) => handleOptionChange('searchContent', value)}
+                            classNames={{
+                                wrapper: "group-data-[selected=true]:bg-blue-600",
+                                thumb: "group-data-[selected=true]:ml-4",
+                                startContent: "ml-0"
+                            }}
+                            thumbIcon={null}
                           >
-                            <span className="text-sm text-gray-400">Search in content</span>
+                            <span className="text-sm text-gray-400 ml-2">Search in content</span>
                           </Switch>
                           <Switch
                             size="sm"
                             isSelected={searchOptions.searchTags}
                             onValueChange={(value) => handleOptionChange('searchTags', value)}
+                            classNames={{
+                                wrapper: "group-data-[selected=true]:bg-blue-600",
+                                thumb: "group-data-[selected=true]:ml-4",
+                                startContent: "ml-0"
+                            }}
+                            thumbIcon={null}
                           >
-                            <span className="text-sm text-gray-400">Search in tags</span>
+                            <span className="text-sm text-gray-400 ml-2">Search in tags</span>
                           </Switch>
                         </div>
                       </div>
@@ -326,12 +362,14 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                           <Dropdown>
                             <DropdownTrigger>
                               <Button variant="bordered" className="w-full justify-start text-gray-400 border-gray-600">
-                                Sort by: {searchOptions.sortBy}
+                                Sort by: {searchOptions.sortBy.charAt(0).toUpperCase() + searchOptions.sortBy.slice(1)}
                               </Button>
                             </DropdownTrigger>
                             <DropdownMenu
                               aria-label="Sort options"
+                              selectedKeys={[searchOptions.sortBy]}
                               onAction={(key) => handleOptionChange('sortBy', key)}
+                              selectionMode="single"
                             >
                               <DropdownItem key="relevance">Relevance</DropdownItem>
                               <DropdownItem key="date">Date</DropdownItem>
@@ -343,12 +381,14 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                             type="number"
                             label="Max results"
                             value={searchOptions.maxResults.toString()}
-                            onValueChange={(value) => handleOptionChange('maxResults', parseInt(value) || 10)}
+                            onValueChange={(value) => handleOptionChange('maxResults', parseInt(value) || 1)}
                             min={1}
                             max={100}
                             className="text-gray-400"
                             classNames={{
-                              inputWrapper: "bg-gray-800/50 border-gray-600"
+                              inputWrapper: "bg-gray-800/50 border-gray-600",
+                              label: "text-gray-400",
+                              input: "text-white"
                             }}
                           />
                         </div>
@@ -362,6 +402,7 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                           size="sm"
                           isSelected={dateRange.enabled}
                           onValueChange={(value) => setDateRange(prev => ({ ...prev, enabled: value }))}
+                          thumbIcon={null}
                         />
                         <h4 className="text-sm font-semibold text-gray-300">Date Range</h4>
                       </div>
@@ -374,7 +415,9 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                             onChange={(date) => setDateRange(prev => ({ ...prev, start: date }))}
                             classNames={{
                               base: "w-full",
-                              inputWrapper: "bg-gray-800/50 border-gray-600"
+                              inputWrapper: "bg-gray-800/50 border-gray-600",
+                              label: "text-gray-400",
+                              input: "text-white"
                             }}
                           />
                           <DatePicker
@@ -383,7 +426,9 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                             onChange={(date) => setDateRange(prev => ({ ...prev, end: date }))}
                             classNames={{
                               base: "w-full",
-                              inputWrapper: "bg-gray-800/50 border-gray-600"
+                              inputWrapper: "bg-gray-800/50 border-gray-600",
+                              label: "text-gray-400",
+                              input: "text-white"
                             }}
                           />
                         </div>
@@ -432,7 +477,7 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                         <CardBody>
                           <div className="space-y-2">
                             <div className="flex items-start justify-between">
-                              <h4 
+                              <h4
                                 className="font-semibold text-white line-clamp-1"
                                 dangerouslySetInnerHTML={{
                                   __html: highlightText(result.title, searchQuery)
@@ -445,7 +490,7 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                             </div>
 
                             {result.content && (
-                              <p 
+                              <p
                                 className="text-sm text-gray-300 line-clamp-2"
                                 dangerouslySetInnerHTML={{
                                   __html: highlightText(result.content.substring(0, 150) + '...', searchQuery)
@@ -474,7 +519,7 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                                   </div>
                                 )}
                               </div>
-                              
+
                               <div className="flex items-center gap-2 text-xs text-gray-500">
                                 <IoCalendar />
                                 <span>{formatTimestamp(result.timestamp)}</span>
@@ -537,7 +582,7 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
       {/* Search Settings Modal */}
       <Modal
         isOpen={isSettingsOpen}
-        onClose={onSettingsClose}
+        onClose={() => setIsSettingsOpen(false)}
         size="2xl"
         classNames={{
           backdrop: "bg-black/50 backdrop-blur-sm",
@@ -579,6 +624,7 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
                   <Switch
                     isSelected={searchOptions.includeContent}
                     onValueChange={(value) => handleOptionChange('includeContent', value)}
+                    thumbIcon={null}
                   >
                     <div>
                       <p className="text-gray-300">Include full content in results</p>
@@ -594,7 +640,7 @@ const AdvancedSearch = ({ isOpen, onClose, onResultSelect }) => {
           <ModalFooter>
             <Button
               variant="ghost"
-              onPress={onSettingsClose}
+              onPress={() => setIsSettingsOpen(false)}
               className="text-gray-400 hover:text-white"
             >
               Close
