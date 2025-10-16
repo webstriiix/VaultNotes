@@ -23,6 +23,14 @@ thread_local! {
         ).unwrap()
     );
 
+    // Dynamic note size configuration (default: 2KB, can be adjusted)
+    pub static MAX_NOTE_SIZE: RefCell<StableCell<u64, Memory>> = RefCell::new(
+        StableCell::init(
+            MEM_MANAGER.with_borrow(|m| m.get(MemoryId::new(4))),
+            2048  // Default 2KB
+        ).unwrap()
+    );
+
     pub static NOTES: RefCell<StableBTreeMap<NoteId, Note, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEM_MANAGER.with_borrow(|m| m.get(MemoryId::new(1)))
@@ -40,7 +48,7 @@ thread_local! {
     ));
     pub static NFTS: RefCell<StableBTreeMap<NftId, Nft, Memory>> =
         RefCell::new(StableBTreeMap::init(
-            MEM_MANAGER.with_borrow(|m| m.get(MemoryId::new(3)))
+            MEM_MANAGER.with_borrow(|m| m.get(MemoryId::new(5)))
     ));
 
     static LEDGER_ID: RefCell<Option<Principal>> = RefCell::new(None);

@@ -27,7 +27,6 @@ import { toast } from "react-toastify";
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 import AISummary from "../../components/ai/AISummary";
 import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardLayout";
-import { CryptoService } from "../../utils/encryption";
 import MintNFTModal from "../Nft/MintNFTModal";
 
 
@@ -44,7 +43,6 @@ const UpdateNote = () => {
     const [noteData, setNoteData] = useState(null);
     const { identity } = useInternetIdentity();
     const [showMintModal, setShowMintModal] = useState(false);
-    const [minting, setMinting] = useState(false);
     const [existingNft, setExistingNft] = useState(null);
 
     // Predefined categories
@@ -106,54 +104,48 @@ const UpdateNote = () => {
             //  Use the new get_note function instead of read_notes
             const noteResult = await encrypted_notes_backend.get_note(noteId);
 
-            if (!noteResult || noteResult.length === 0) {
-                toast.error("Note not found or you don't have access to it.");
-                navigate("/notes");
-                return;
-            }
-
-            const foundNote = noteResult[0]; // Extract note from Optional result
-
-            // Check if user can edit this note
-            const userPrincipal = identity.getPrincipal();
-            const canEdit = foundNote.owner.compareTo(userPrincipal) === 'eq' ||
-                foundNote.shared_edit.some(p => p.compareTo(userPrincipal) === 'eq');
-
-            if (!canEdit) {
-                toast.error("You don't have permission to edit this note.");
-                navigate("/notes");
-                return;
-            }
-
-            setNoteData(foundNote);
-
-            // Decrypt the note content
-            if (foundNote.encrypted) {
-                console.log("Decrypting note content...");
-                const cryptoService = new CryptoService(encrypted_notes_backend, identity);
-                const owner = foundNote.owner.toText();
-                const decryptedData = await cryptoService.decryptWithNoteKey(
-                    noteId,
-                    owner,
-                    foundNote.encrypted
-                );
-
-                const noteContent = JSON.parse(decryptedData);
-
-                // Populate form fields with decrypted data
-                setTitle(noteContent.title || "");
-                setContent(noteContent.content || "");
-                setCategory(noteContent.category || "");
-                setTags(noteContent.tags || []);
-
-                console.log("Note data loaded successfully:", noteContent);
-                toast.success("Note loaded successfully!");
-            }
-        } catch (err) {
-            console.error("❌ Failed to fetch note:", err);
-            toast.error("Failed to load note: " + (err.message || err));
+        if (!noteResult || noteResult.length === 0) {
+            toast.error("Note not found or you don't have access to it.");
             navigate("/notes");
-        } finally {
+            return;
+        }
+
+        const foundNote = noteResult[0]; // Extract note from Optional result
+
+        // Check if user can edit this note
+        const userPrincipal = identity.getPrincipal();
+        const canEdit = foundNote.owner.compareTo(userPrincipal) === 'eq' ||
+            foundNote.shared_edit.some(p => p.compareTo(userPrincipal) === 'eq');
+
+        if (!canEdit) {
+            toast.error("You don't have permission to edit this note.");
+            navigate("/notes");
+            return;
+        }
+
+        setNoteData(foundNote);
+
+        const raw = foundNote.encrypted || "";
+        let noteContent = {};
+        if (raw) {
+            try {
+                noteContent = JSON.parse(raw);
+            } catch (parseErr) {
+                console.warn("Failed to parse stored note JSON:", parseErr);
+            }
+        }
+
+        setTitle(noteContent.title || "");
+        setContent(noteContent.content || "");
+        setCategory(noteContent.category || "");
+        setTags(noteContent.tags || []);
+
+        toast.success("Note loaded successfully!");
+    } catch (err) {
+        console.error("❌ Failed to fetch note:", err);
+        toast.error("Error");
+        navigate("/notes");
+    } finally {
             setFetchingData(false);
         }
     };
@@ -170,56 +162,67 @@ const UpdateNote = () => {
         }
 
         try {
-            setLoading(true)
-            setMinting(true);
-            Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
+            setLoading(true);
+            await handleICPMinting({ title, description, price });
 
-            const notes = noteData.encrypted;
-
-            // Convert BTC to opt<float64>
-            const priceOpt = price && price.trim() !== ""
-                ? [parseFloat(price)]
-                : [];
-
-            console.log("🔍 Checking if NFT already exists for note:", noteData.id);
-
-            // 1. Check if NFT already minted for this note
-            const myNfts = await encrypted_notes_backend.list_my_nfts();
-            const existingNft = myNfts.find(nft => nft.note_id === noteData.id);
-
-            if (existingNft) {
-                console.log(" NFT exists, updating listing instead of minting:", existingNft);
-
-                // Update listing (price + listed flag)
-                await encrypted_notes_backend.update_listing(
-                    existingNft.id,
-                    true, // mark as listed
-                    priceOpt.length > 0 ? [BigInt(priceOpt[0] * 100_000_000)] : [] // convert BTC → sats if needed
-                );
-
-                toast.success(`NFT updated successfully!`);
-            } else {
-                console.log("🆕 No NFT yet, minting new one...");
-
-                // 2. Mint new NFT
-                const nftId = await encrypted_notes_backend.mint_note_to_nft(
-                    noteData.id,
-                    title,
-                    description,
-                    notes,
-                    priceOpt
-                );
-
-                toast.success(`NFT minted successfully!`);
+            try {
+                Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
+                const myNfts = await encrypted_notes_backend.list_my_nfts();
+                const updatedNft = myNfts.find((nft) => nft.note_id === noteData.id);
+                setExistingNft(updatedNft || null);
+            } catch (refreshErr) {
+                console.error("Failed to refresh NFT:", refreshErr);
             }
-
+            
             setShowMintModal(false);
         } catch (err) {
-            console.error(" Failed to mint/update NFT:", err);
-            toast.error("Failed to mint/update NFT: " + (err.message || err));
+            console.error("❌ Failed to mint NFT:", err);
+            toast.error("Error");
         } finally {
-            setMinting(false);
-            setLoading(false)
+            setLoading(false);
+        }
+    };
+    
+    const handleICPMinting = async ({ title, description, price }) => {
+        Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
+        
+        const notes = noteData.encrypted;
+        
+        // Convert BTC to opt<float64>
+        const priceOpt = price && price.trim() !== ""
+            ? [parseFloat(price)]
+            : [];
+
+        console.log("🔍 Checking if NFT already exists for note:", noteData.id);
+
+        // 1. Check if NFT already minted for this note
+        const myNfts = await encrypted_notes_backend.list_my_nfts();
+        const existingNft = myNfts.find(nft => nft.note_id === noteData.id);
+
+        if (existingNft) {
+            console.log("✅ NFT exists, updating listing instead of minting:", existingNft);
+
+            // Update listing (price + listed flag)
+            await encrypted_notes_backend.update_listing(
+                existingNft.id,
+                true, // mark as listed
+                priceOpt.length > 0 ? [BigInt(priceOpt[0] * 100_000_000)] : [] // convert BTC → sats if needed
+            );
+
+            toast.success(`🎉 ICP NFT updated successfully!`);
+        } else {
+            console.log("🆕 No NFT yet, minting new one...");
+
+            // 2. Mint new NFT
+            const nftId = await encrypted_notes_backend.mint_note_to_nft(
+                noteData.id,
+                title,
+                description,
+                notes,
+                priceOpt
+            );
+
+            toast.success(`🎉 ICP NFT minted successfully!`);
         }
     };
 
@@ -295,30 +298,16 @@ const UpdateNote = () => {
             };
             const plaintext = JSON.stringify(updatedNoteData);
 
-            console.log("[1/3] Encrypting updated note locally...");
-            const cryptoService = new CryptoService(
-                encrypted_notes_backend,
-                identity
-            );
-            const owner = noteData.owner.toText();
-            const noteId = noteData.id;
-            const encryptedBase64 = await cryptoService.encryptWithNoteKey(
-                noteId,
-                owner,
-                plaintext
-            );
+            await encrypted_notes_backend.update_note(noteData.id, plaintext);
 
-            console.log("[2/3] Updating note on-chain with new ciphertext...");
-            await encrypted_notes_backend.update_note(noteId, encryptedBase64);
-
-            console.log("[3/3] Done. Note updated successfully.");
+            console.log("✅ Note updated successfully.");
             toast.success("Note updated successfully");
 
             // Navigate back to notes list
             navigate("/notes");
         } catch (err) {
             console.error(" Failed to update note:", err);
-            toast.error("Failed to update note: " + (err.message || err));
+            toast.error("Error");
         } finally {
             setLoading(false);
         }
@@ -700,6 +689,7 @@ const UpdateNote = () => {
                     onClose={() => setShowMintModal(false)}
                     onMint={handleMintNFT}
                     existingNft={existingNft}
+                    loading={loading}
                 />
 
             </div>

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "/assets/logo.png";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -9,7 +10,7 @@ export default function Footer() {
           <div className="mb-4 md:mb-0 flex justify-center md:justify-start">
             <Link to="/" className="flex items-center space-x-3">
               <img
-                src="/assets/logo.png"
+                src={logo}
                 alt="Encrypted Notes Logo"
                 className="w-10 md:w-12"
               />

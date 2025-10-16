@@ -24,3 +24,9 @@ dist/
 
 # environment variables
 .env
+
+# downloaded ledger artifacts
+icp_ledger.wasm.gz
+icp_ledger.did
+icrc1_ledger.wasm.gz
+icrc1_ledger.did
