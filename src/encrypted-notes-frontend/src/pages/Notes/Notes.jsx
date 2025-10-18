@@ -31,6 +31,7 @@ import DashboardLayout from "../../components/layouts/DashboardLayout/DashboardL
 import DeleteNoteModal from "./DeleteNoteModal";
 import ShareEditNoteModal from "./ShareEditNoteModal";
 import ShareReadNoteModal from "./ShareReadNoteModal";
+import UnshareNoteModal from "./UnshareNoteModal";
 import { toast } from "react-toastify";
 
 const Notes = () => {
@@ -45,6 +46,7 @@ const Notes = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteNoteId, setDeleteNoteId] = useState(null);
     const [isShareEditModalOpen, setIsShareEditModalOpen] = useState(false);
+    const [isUnshareModalOpen, setIsUnshareModalOpen] = useState(false);
 
     const handleShareEditNote = (noteId) => {
         setSelectedNoteId(noteId);
@@ -53,6 +55,16 @@ const Notes = () => {
 
     const handleCloseEditModal = () => {
         setIsShareEditModalOpen(false);
+        setSelectedNoteId(null);
+    };
+
+    const handleManageShares = (noteId) => {
+        setSelectedNoteId(noteId);
+        setIsUnshareModalOpen(true);
+    };
+
+    const handleCloseUnshareModal = () => {
+        setIsUnshareModalOpen(false);
         setSelectedNoteId(null);
     };
 
@@ -330,6 +342,12 @@ const Notes = () => {
                                                     Share with Edit Access
                                                 </DropdownItem>
                                                 <DropdownItem
+                                                    key="manage-shares"
+                                                    onPress={() => handleManageShares(note.id)}
+                                                >
+                                                    Manage Shares
+                                                </DropdownItem>
+                                                <DropdownItem
                                                     key="delete"
                                                     className="text-danger"
                                                     color="danger"
@@ -440,6 +458,12 @@ const Notes = () => {
             <ShareEditNoteModal
                 isOpen={isShareEditModalOpen}
                 onClose={handleCloseEditModal}
+                noteId={selectedNoteId}
+            />
+
+            <UnshareNoteModal
+                isOpen={isUnshareModalOpen}
+                onClose={handleCloseUnshareModal}
                 noteId={selectedNoteId}
             />
 
