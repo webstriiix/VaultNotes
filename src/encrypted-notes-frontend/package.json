@@ -42,6 +42,7 @@
     "idb-keyval": "^6.2.2",
     "lit-html": "^2.8.0",
     "object-hash": "^3.0.0",
+    "pnpm": "^10.18.3",
     "postcss-selector-parser": "^6.1.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

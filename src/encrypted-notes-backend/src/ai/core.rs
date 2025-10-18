@@ -18,8 +18,22 @@ fn elapsed_seconds(start_ns: u64) -> f64 {
 pub fn summarize_text(request: SummaryRequest) -> SummaryResponse {
     let start_time = time(); // IC time in nanoseconds
 
-    let text = request.text;
+    let text = request.text.clone();
     let content_type = request.content_type.unwrap_or_else(|| "general".to_string());
+
+    // Check cache first
+    use super::cache::{get_cached_summary, cache_summary};
+    if let Some(cached_summary) = get_cached_summary(&text, &content_type) {
+        return SummaryResponse {
+            summary: cached_summary,
+            success: true,
+            processing_time: elapsed_seconds(start_time),
+            compression_ratio: 0.0, // Would need to store this in cache too
+            method: "cached".to_string(),
+            error: None,
+            quality_metrics: None,
+        };
+    }
 
     // Handle very short texts
     if text.len() < 100 {
@@ -30,6 +44,7 @@ pub fn summarize_text(request: SummaryRequest) -> SummaryResponse {
             compression_ratio: 1.0,
             method: "passthrough".to_string(),
             error: None,
+            quality_metrics: None,
         };
     }
 
@@ -44,30 +59,91 @@ pub fn summarize_text(request: SummaryRequest) -> SummaryResponse {
             compression_ratio: 0.0,
             method: "failed".to_string(),
             error: Some("Could not parse sentences from text".to_string()),
+            quality_metrics: None,
         };
     }
 
-    // Score all sentences
-    let scored_sentences: Vec<(String, f64)> = sentences
-        .iter()
-        .map(|sentence| {
-            (
-                sentence.clone(),
-                analyzer.score_sentence(sentence, &content_type),
-            )
-        })
-        .collect();
+    let total_sentences = sentences.len();
 
-    // Select top sentences for summary
-    let target_sentence_count = ((sentences.len() as f64 * 0.3).ceil() as usize)
-        .min(5)
-        .max(1);
+    // Score all sentences with position bonus and context awareness
+    let mut scored_sentences: Vec<(String, f64)> = Vec::new();
+    let mut previous_keywords: Option<std::collections::HashSet<String>> = None;
+    
+    for (idx, sentence) in sentences.iter().enumerate() {
+        // Score with context from previous sentences
+        let mut score = analyzer.score_sentence_with_context(
+            sentence, 
+            &content_type,
+            previous_keywords.as_ref(),
+            &sentences
+        );
+        
+        // Position bonus: first few sentences get higher scores (increased bonuses)
+        let position_bonus = if idx == 0 {
+            3.5 // First sentence often contains main topic (increased from 2.0)
+        } else if idx == 1 {
+            2.5 // Second sentence (increased from 1.5)
+        } else if idx < 3 {
+            1.5 // Third sentence (increased from 1.0)
+        } else if idx >= total_sentences.saturating_sub(2) {
+            2.0 // Last sentences may contain conclusions (increased from 1.0)
+        } else {
+            0.0
+        };
+        
+        score += position_bonus;
+        scored_sentences.push((sentence.clone(), score));
+        
+        // Update context for next sentence
+        let current_words: std::collections::HashSet<String> = sentence
+            .split_whitespace()
+            .map(|w| w.to_lowercase().trim_matches(|c: char| !c.is_alphabetic()).to_string())
+            .filter(|w| w.len() > 3)
+            .collect();
+        
+        previous_keywords = Some(current_words);
+    }
+
+    // Select top sentences for summary with adaptive count
+    let target_sentence_count = if total_sentences <= 3 {
+        total_sentences
+    } else if total_sentences <= 6 {
+        3
+    } else if total_sentences <= 10 {
+        ((total_sentences as f64 * 0.4).ceil() as usize).max(3).min(5)
+    } else if total_sentences <= 20 {
+        ((total_sentences as f64 * 0.35).ceil() as usize).max(5).min(10)
+    } else if total_sentences <= 40 {
+        ((total_sentences as f64 * 0.30).ceil() as usize).max(8).min(15)
+    } else {
+        // For very long texts (>40 sentences), aim for ~25% but cap at 20 sentences
+        ((total_sentences as f64 * 0.25).ceil() as usize).max(10).min(20)
+    };
     let selected = analyzer.select_top_sentences(scored_sentences, target_sentence_count);
 
     // Generate the final summary
     let summary = analyzer.generate_summary_text(selected);
 
     let compression_ratio = summary.len() as f64 / text.len() as f64;
+
+    // Calculate quality metrics
+    use super::metrics::SummaryMetrics;
+    let metrics = SummaryMetrics::calculate_all_metrics(&text, &summary, None);
+    
+    let quality_metrics = Some(QualityMetrics {
+        rouge_1: metrics.rouge_1,
+        rouge_2: metrics.rouge_2,
+        rouge_l: metrics.rouge_l,
+        informativeness: metrics.informativeness,
+        coherence_score: metrics.coherence_score,
+        readability_score: metrics.readability_score,
+        redundancy_score: metrics.redundancy_score,
+        coverage_score: metrics.coverage_score,
+        overall_quality: metrics.overall_quality_score(),
+    });
+
+    // Cache the result for future requests
+    cache_summary(&text, &content_type, summary.clone());
 
     SummaryResponse {
         summary,
@@ -76,6 +152,7 @@ pub fn summarize_text(request: SummaryRequest) -> SummaryResponse {
         compression_ratio,
         method: "advanced_extractive".to_string(),
         error: None,
+        quality_metrics,
     }
 }
 
