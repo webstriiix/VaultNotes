@@ -18,6 +18,21 @@ pub struct SummaryResponse {
     pub compression_ratio: f64,
     pub method: String,
     pub error: Option<String>,
+    // Quality metrics
+    pub quality_metrics: Option<QualityMetrics>,
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize)]
+pub struct QualityMetrics {
+    pub rouge_1: f64,
+    pub rouge_2: f64,
+    pub rouge_l: f64,
+    pub informativeness: f64,
+    pub coherence_score: f64,
+    pub readability_score: f64,
+    pub redundancy_score: f64,
+    pub coverage_score: f64,
+    pub overall_quality: f64,
 }
 
 #[derive(Clone, Debug, CandidType, Deserialize)]

@@ -65,3 +65,48 @@ pub fn ai_health_check_endpoint() -> String {
     ai_health_check()
 }
 
+/// Run performance benchmark
+/// Executes comprehensive benchmark suite and returns detailed report
+#[query]
+pub fn run_benchmark_endpoint() -> String {
+    use crate::ai::SummarizerBenchmark;
+    let mut benchmark = SummarizerBenchmark::new();
+    benchmark.run_comprehensive_suite();
+    benchmark.generate_report()
+}
+
+/// Quick performance test
+/// Tests summarizer with provided text and returns performance metrics
+#[update]
+pub fn quick_performance_test_endpoint(text: String) -> String {
+    use crate::ai::quick_performance_test;
+    quick_performance_test(&text)
+}
+
+/// Get cache statistics
+/// Returns current cache performance statistics
+#[query]
+pub fn get_cache_stats_endpoint() -> String {
+    use crate::ai::get_cache_stats;
+    let stats = get_cache_stats();
+    stats.to_string()
+}
+
+/// Clear cache
+/// Clears all cached summaries
+#[update]
+pub fn clear_cache_endpoint() -> String {
+    use crate::ai::clear_cache;
+    clear_cache();
+    "Cache cleared successfully".to_string()
+}
+
+/// Clear expired cache entries
+/// Removes only expired cache entries
+#[update]
+pub fn clear_expired_cache_endpoint() -> String {
+    use crate::ai::clear_expired_cache;
+    clear_expired_cache();
+    "Expired cache entries cleared successfully".to_string()
+}
+

@@ -23,11 +23,11 @@ thread_local! {
         ).unwrap()
     );
 
-    // Dynamic note size configuration (default: 2KB, can be adjusted)
+    // Dynamic note size configuration (default: 100KB, can be adjusted)
     pub static MAX_NOTE_SIZE: RefCell<StableCell<u64, Memory>> = RefCell::new(
         StableCell::init(
             MEM_MANAGER.with_borrow(|m| m.get(MemoryId::new(4))),
-            2048  // Default 2KB
+            102400  // Default 100KB (increased from 2KB for better usability)
         ).unwrap()
     );
 
