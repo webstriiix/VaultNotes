@@ -224,7 +224,7 @@ npm install
 cd ../..
 
 # 5. Test AI functionality
-dfx canister call encrypted-notes-backend ai_health_check
+dfx canister call encrypted-notes-backend ai_health_check_endpoint
 ```
 
 ---
