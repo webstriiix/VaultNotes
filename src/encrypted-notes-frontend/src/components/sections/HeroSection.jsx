@@ -1,9 +1,9 @@
-import { LoginButton } from "./LoginButton";
 import { useInternetIdentity } from "ic-use-internet-identity";
+import { LoginButton } from "./LoginButton";
 
 export default function HeroSection() {
   const { login, identity, isLoggingIn } = useInternetIdentity();
-  
+
   const disabled = isLoggingIn || !!identity;
   const text = isLoggingIn
     ? "Initializing..."
@@ -22,15 +22,16 @@ export default function HeroSection() {
             Vault Notes
           </span>
         </h1>
-        <p className="mt-4 text-base md:text-lg text-gray-300 mx-auto px-2 md:px-16 whitespace-pre-line">
-          Securely store, manage, and collaborate on your notes using Web3
-          technology.
-          <br />
-          Sign up easily using Internet Identity (Web3 Credential). Create,
-          edit, and share encrypted notes anytime, anywhere.
+
+        <p className="mt-6 text-base md:text-lg text-gray-300 mx-auto max-w-3xl leading-relaxed">
+          Securely create, store, and manage your private notes all powered by
+          Web3 technology. Mint your notes as unique NFTs and trade them using
+          ckBTC directly on chain. Experience secure note ownership with Bitcoin
+          backed NFT minting and Internet Identity login.
         </p>
+
         <div className="mt-10 -mb-20">
-          <LoginButton loginText="Get Started" />
+          <LoginButton loginText={text} disabled={disabled} />
         </div>
       </div>
     </section>
