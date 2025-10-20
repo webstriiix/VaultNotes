@@ -1,14 +1,14 @@
-use candid::{CandidType, Principal};
+use candid::{CandidType, Nat, Principal};
 use ic_cdk::api::{canister_self, msg_caller};
 use ic_cdk::{call, query, update};
 use serde::Deserialize;
 
+use crate::helpers::{
+    assert_not_anonymous, btc_to_stats, get_max_note_size, get_next_id,
+    nns_canister_self_pointer_to_note,
+};
 use crate::storage::{get_ledger_ids, NFTS, NOTES};
 use crate::types::{Account, Nft, NftId, NoteId};
-use crate::helpers::{
-    assert_not_anonymous, get_next_id, get_max_note_size,
-    btc_to_stats, nns_canister_self_pointer_to_note
-};
 
 const ADMIN_FEE_PERCENT: u64 = 3;
 
@@ -44,8 +44,8 @@ pub fn mint_note_to_nft(
             let max_size = get_max_note_size();
             if note.encrypted.len() > max_size {
                 ic_cdk::trap(&format!(
-                    "Note too large: {} bytes exceeds limit of {} bytes", 
-                    note.encrypted.len(), 
+                    "Note too large: {} bytes exceeds limit of {} bytes",
+                    note.encrypted.len(),
                     max_size
                 ));
             }
@@ -202,6 +202,7 @@ pub async fn buy_nft(nft_id: NftId) -> Result<String, String> {
 
     #[derive(CandidType, Deserialize)]
     struct TransferFromArgs {
+        spender_subaccount: Option<[u8; 32]>,
         from: Account,
         to: Account,
         amount: u128,
@@ -210,7 +211,60 @@ pub async fn buy_nft(nft_id: NftId) -> Result<String, String> {
         created_at_time: Option<u64>,
     }
 
+    #[derive(Clone, Debug, CandidType, Deserialize)]
+    enum TransferFromError {
+        BadFee { expected_fee: Nat },
+        BadBurn { min_burn_amount: Nat },
+        InsufficientFunds { balance: Nat },
+        InsufficientAllowance { allowance: Nat },
+        TooOld,
+        CreatedInFuture { ledger_time: u64 },
+        Duplicate { duplicate_of: Nat },
+        TemporarilyUnavailable,
+        GenericError { error_code: Nat, message: String },
+    }
+
+    #[derive(Clone, Debug, CandidType, Deserialize)]
+    enum TransferFromResult {
+        Ok(Nat),
+        Err(TransferFromError),
+    }
+
+    fn format_transfer_from_error(err: TransferFromError) -> String {
+        match err {
+            TransferFromError::BadFee { expected_fee } => {
+                format!("Bad fee. Expected {}", expected_fee)
+            }
+            TransferFromError::BadBurn { min_burn_amount } => {
+                format!("Bad burn. Minimum burn amount {}", min_burn_amount)
+            }
+            TransferFromError::InsufficientFunds { balance } => {
+                format!("Insufficient funds. Balance {}", balance)
+            }
+            TransferFromError::InsufficientAllowance { allowance } => {
+                format!("Insufficient allowance. Allowance {}", allowance)
+            }
+            TransferFromError::TooOld => "Transaction too old".to_string(),
+            TransferFromError::CreatedInFuture { ledger_time } => {
+                format!("Transaction created in future. Ledger time {}", ledger_time)
+            }
+            TransferFromError::Duplicate { duplicate_of } => {
+                format!("Duplicate transaction. Duplicate of {}", duplicate_of)
+            }
+            TransferFromError::TemporarilyUnavailable => {
+                "Ledger temporarily unavailable".to_string()
+            }
+            TransferFromError::GenericError {
+                error_code,
+                message,
+            } => {
+                format!("Ledger error {} - {}", error_code, message)
+            }
+        }
+    }
+
     let seller_args = TransferFromArgs {
+        spender_subaccount: None,
         from: Account {
             owner: buyer,
             subaccount: None,
@@ -225,13 +279,14 @@ pub async fn buy_nft(nft_id: NftId) -> Result<String, String> {
         created_at_time: None,
     };
 
-    let seller_transfer: Result<(Result<u128, String>,), _> =
+    let seller_transfer: Result<(TransferFromResult,), _> =
         call(ledger_id, "icrc2_transfer_from", (seller_args,)).await;
 
     match seller_transfer {
-        Ok((Ok(_index),)) => {
+        Ok((TransferFromResult::Ok(_index),)) => {
             if admin_fee > 0 {
                 let admin_args = TransferFromArgs {
+                    spender_subaccount: None,
                     from: Account {
                         owner: buyer,
                         subaccount: None,
@@ -246,12 +301,17 @@ pub async fn buy_nft(nft_id: NftId) -> Result<String, String> {
                     created_at_time: None,
                 };
 
-                let admin_transfer: Result<(Result<u128, String>,), _> =
+                let admin_transfer: Result<(TransferFromResult,), _> =
                     call(ledger_id, "icrc2_transfer_from", (admin_args,)).await;
 
                 match admin_transfer {
-                    Ok((Ok(_),)) => {}
-                    Ok((Err(e),)) => return Err(format!("Ledger admin fee transfer failed: {}", e)),
+                    Ok((TransferFromResult::Ok(_),)) => {}
+                    Ok((TransferFromResult::Err(e),)) => {
+                        return Err(format!(
+                            "Ledger admin fee transfer failed: {}",
+                            format_transfer_from_error(e)
+                        ))
+                    }
                     Err((code, msg)) => {
                         return Err(format!(
                             "Ledger call error while collecting admin fee: {:?} - {}",
@@ -283,7 +343,10 @@ pub async fn buy_nft(nft_id: NftId) -> Result<String, String> {
                 nft_id, admin_fee
             ))
         }
-        Ok((Err(e),)) => Err(format!("Ledger transfer_from failed: {}", e)),
+        Ok((TransferFromResult::Err(e),)) => Err(format!(
+            "Ledger transfer_from failed: {}",
+            format_transfer_from_error(e)
+        )),
         Err((code, msg)) => Err(format!("Ledger call error: {:?} - {}", code, msg)),
     }
 }
