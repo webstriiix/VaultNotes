@@ -8,16 +8,20 @@ import {
     ModalContent,
     ModalFooter,
     ModalHeader,
+    Divider,
 } from "@heroui/react";
 import { useInternetIdentity } from "ic-use-internet-identity";
 import { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
+import { toast } from "react-toastify";
 import { encrypted_notes_backend } from "../../../../declarations/encrypted-notes-backend";
 
 const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
     const [allUsers, setAllUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [sharedUsers, setSharedUsers] = useState([]);
+    const [existingSharedUsers, setExistingSharedUsers] = useState([]);
+    const [usersToRemove, setUsersToRemove] = useState([]); // Track users to unshare
     const { identity } = useInternetIdentity();
 
     useEffect(() => {
@@ -26,7 +30,25 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
                 if (!identity) return;
                 Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
                 const users = await encrypted_notes_backend.get_other_users(identity.getPrincipal());
-                setAllUsers(users);
+                
+                // Filter out current user (double check)
+                const currentUserPrincipal = identity.getPrincipal().toText();
+                const filteredUsers = users.filter(user => user.id.toText() !== currentUserPrincipal);
+                setAllUsers(filteredUsers);
+
+                // Fetch existing shared users for this note
+                if (noteId) {
+                    const note = await encrypted_notes_backend.get_note(noteId);
+                    if (note && note.length > 0) {
+                        const noteData = note[0];
+                        const existingUsers = filteredUsers.filter(user => 
+                            noteData.shared_edit.some(principal => 
+                                principal.toText() === user.id.toText()
+                            )
+                        );
+                        setExistingSharedUsers(existingUsers);
+                    }
+                }
             } catch (err) {
                 console.error("Failed to fetch users:", err);
             }
@@ -34,12 +56,11 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
 
         if (isOpen) {
             fetchUsers();
+            setUsersToRemove([]); // Reset on open
         }
-    }, [isOpen, identity]);
+    }, [isOpen, identity, noteId]);
 
     const onSave = async () => {
-        console.log("Shared users JSON:", JSON.stringify(sharedUsers, null, 2));
-
         if (!noteId) {
             console.warn("No noteId selected!");
             return;
@@ -47,14 +68,55 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
 
         Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
 
+        // First, remove users that were marked for removal
+        for (const user of usersToRemove) {
+            try {
+                await encrypted_notes_backend.unshare_note_edit(noteId, user.id);
+                toast.success(`Removed edit access from ${user.username}`);
+            } catch (err) {
+                console.error(`Failed to unshare note with ${user.username}:`, err);
+                toast.error(`Failed to remove access from ${user.username}`);
+            }
+        }
+
+        // Then, add new users
         for (const user of sharedUsers) {
             try {
                 await encrypted_notes_backend.share_note_edit(noteId, user.id);
-                alert(`✅ Shared note ${noteId} with ${user.username}`);
+                toast.success(`Shared note with ${user.username}`);
             } catch (err) {
-                console.error(`❌ Failed to share note with ${user.username}:`, err);
+                console.error(`Failed to share note with ${user.username}:`, err);
+                toast.error(`Failed to share with ${user.username}`);
             }
         }
+        
+        // Refresh existing shared users
+        try {
+            const note = await encrypted_notes_backend.get_note(noteId);
+            if (note && note.length > 0) {
+                const noteData = note[0];
+                const users = await encrypted_notes_backend.get_other_users(identity.getPrincipal());
+                const currentUserPrincipal = identity.getPrincipal().toText();
+                const filteredUsers = users.filter(user => user.id.toText() !== currentUserPrincipal);
+                const existingUsers = filteredUsers.filter(user => 
+                    noteData.shared_edit.some(principal => 
+                        principal.toText() === user.id.toText()
+                    )
+                );
+                setExistingSharedUsers(existingUsers);
+            }
+        } catch (err) {
+            console.error("Failed to refresh shared users:", err);
+        }
+        
+        setSharedUsers([]);
+        setUsersToRemove([]);
+    };
+
+    const handleRemoveExistingUser = (user) => {
+        // Mark for removal and update UI
+        setUsersToRemove((prev) => [...prev, user]);
+        setExistingSharedUsers((prev) => prev.filter((u) => u.id.toText() !== user.id.toText()));
     };
 
 
@@ -68,11 +130,24 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
         setSharedUsers((prev) => prev.filter((u) => u.id.toText() !== userId));
     };
 
-    const filteredUsers = allUsers.filter(
-        (u) =>
+    const filteredUsers = allUsers.filter((u) => {
+        // Filter by search query
+        const matchesSearch = 
             u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+            u.email.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Exclude users already in the existing shared list
+        const notAlreadyShared = !existingSharedUsers.find(
+            (existing) => existing.id.toText() === u.id.toText()
+        );
+        
+        // Exclude users already selected to be added
+        const notInAddList = !sharedUsers.find(
+            (selected) => selected.id.toText() === u.id.toText()
+        );
+        
+        return matchesSearch && notAlreadyShared && notInAddList;
+    });
 
     return (
         <Modal
@@ -107,49 +182,80 @@ const ShareEditNoteModal = ({ isOpen, onClose, noteId }) => {
 
                         {/* Body */}
                         <ModalBody>
-                            {/* Input search */}
-                            <Input
-                                placeholder="Search user by username or email..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full"
-                                variant="bordered"
-                            />
-
-                            {/* Shared users */}
-                            {sharedUsers.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                    {sharedUsers.map((user) => (
-                                        <Chip
-                                            key={user.id.toText()}
-                                            onClose={() => handleRemoveUser(user.id.toText())}
-                                            variant="flat"
-                                            color="primary"
-                                        >
-                                            {user.username} ({user.email})
-                                        </Chip>
-                                    ))}
-                                </div>
+                            {/* Existing Shared Users Section */}
+                            {existingSharedUsers.length > 0 && (
+                                <>
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-semibold text-gray-400">
+                                            Currently Shared With (Edit Access):
+                                        </h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {existingSharedUsers.map((user) => (
+                                                <Chip
+                                                    key={user.id.toText()}
+                                                    onClose={() => handleRemoveExistingUser(user)}
+                                                    variant="flat"
+                                                    color="warning"
+                                                >
+                                                    {user.username}
+                                                </Chip>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <Divider className="my-2" />
+                                </>
                             )}
 
-                            {/* Search result */}
-                            <div className="max-h-60 overflow-y-auto border border-[#3C444D] rounded-xl divide-y divide-[#3C444D]">
-                                {filteredUsers.length > 0 ? (
-                                    filteredUsers.map((user) => (
-                                        <div
-                                            key={user.id.toText()}
-                                            className="p-3 hover:bg-[#1F2937] cursor-pointer transition-colors"
-                                            onClick={() => handleAddUser(user)}
-                                        >
-                                            <p className="font-medium">{user.username}</p>
-                                            <p className="text-sm text-gray-400">{user.email}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-gray-500 text-sm p-3 text-center">
-                                        No users found
-                                    </p>
+                            {/* Add New Users Section */}
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-semibold text-gray-400">
+                                    Add New Users:
+                                </h4>
+                                
+                                {/* Input search */}
+                                <Input
+                                    placeholder="Search user by username or email..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full"
+                                    variant="bordered"
+                                />
+
+                                {/* Selected users to share */}
+                                {sharedUsers.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {sharedUsers.map((user) => (
+                                            <Chip
+                                                key={user.id.toText()}
+                                                onClose={() => handleRemoveUser(user.id.toText())}
+                                                variant="flat"
+                                                color="primary"
+                                            >
+                                                {user.username} ({user.email})
+                                            </Chip>
+                                        ))}
+                                    </div>
                                 )}
+
+                                {/* Search result */}
+                                <div className="max-h-60 overflow-y-auto border border-[#3C444D] rounded-xl divide-y divide-[#3C444D]">
+                                    {filteredUsers.length > 0 ? (
+                                        filteredUsers.map((user) => (
+                                            <div
+                                                key={user.id.toText()}
+                                                className="p-3 hover:bg-[#1F2937] cursor-pointer transition-colors"
+                                                onClick={() => handleAddUser(user)}
+                                            >
+                                                <p className="font-medium">{user.username}</p>
+                                                <p className="text-sm text-gray-400">{user.email}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500 text-sm p-3 text-center">
+                                            No users found
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </ModalBody>
 

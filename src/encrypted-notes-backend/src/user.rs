@@ -9,16 +9,61 @@ use crate::helpers::assert_not_anonymous;
 use crate::storage::USER_PROFILES;
 use crate::types::UserProfile;
 
+/// Check if a username is already taken by another user
+/// Returns true if the username is available, false if taken
+#[query]
+pub fn is_username_available(username: String) -> bool {
+    if username.trim().is_empty() {
+        return false;
+    }
+    
+    let username_lower = username.trim().to_lowercase();
+    
+    USER_PROFILES.with(|map| {
+        !map.borrow().iter().any(|(_, profile)| {
+            profile.username.to_lowercase() == username_lower
+        })
+    })
+}
+
+/// Check if a username is available for a specific user (for updates)
+/// Returns true if the username is available or belongs to the caller
+#[query]
+pub fn is_username_available_for_user(username: String, user_principal: Principal) -> bool {
+    if username.trim().is_empty() {
+        return false;
+    }
+    
+    let username_lower = username.trim().to_lowercase();
+    
+    USER_PROFILES.with(|map| {
+        !map.borrow().iter().any(|(id, profile)| {
+            id != user_principal && profile.username.to_lowercase() == username_lower
+        })
+    })
+}
+
 /// Register a new user with username and email
 /// Creates a user profile associated with the caller's principal
+/// Returns error if username is already taken
 #[update]
 pub fn register_user(username: String, email: String) {
     let user = msg_caller();
     let _ = assert_not_anonymous(&user);
 
+    // Validate username is not empty
+    if username.trim().is_empty() {
+        ic_cdk::trap("Username cannot be empty");
+    }
+
+    // Check if username is already taken
+    if !is_username_available(username.clone()) {
+        ic_cdk::trap("Username is already taken. Please choose a different username.");
+    }
+
     let profile = UserProfile {
         id: user,
-        username,
+        username: username.trim().to_string(),
         email,
     };
 
@@ -63,6 +108,7 @@ pub fn is_user_registered(principal: Principal) -> bool {
 
 /// Update user profile information
 /// Allows users to update their own profile data
+/// Returns error if username is already taken by another user
 #[update]
 pub fn update_profile(username: String, email: String) {
     let user = msg_caller();
@@ -75,9 +121,19 @@ pub fn update_profile(username: String, email: String) {
         ic_cdk::trap("User not registered. Please register first.");
     }
 
+    // Validate username is not empty
+    if username.trim().is_empty() {
+        ic_cdk::trap("Username cannot be empty");
+    }
+
+    // Check if username is already taken by another user
+    if !is_username_available_for_user(username.clone(), user) {
+        ic_cdk::trap("Username is already taken. Please choose a different username.");
+    }
+
     let updated_profile = UserProfile {
         id: user,
-        username,
+        username: username.trim().to_string(),
         email,
     };
 

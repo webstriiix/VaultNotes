@@ -306,44 +306,234 @@ impl TextAnalyzer {
             .collect()
     }
 
-    /// Score a sentence for summarization
-    pub fn score_sentence(&self, sentence: &str, _content_type: &str) -> f64 {
+    /// Score a sentence for summarization with advanced context-aware algorithm
+    pub fn score_sentence(&self, sentence: &str, content_type: &str) -> f64 {
+        self.score_sentence_with_context(sentence, content_type, None, &[])
+    }
+
+    /// Score a sentence with context awareness and discourse markers
+    pub fn score_sentence_with_context(
+        &self, 
+        sentence: &str, 
+        content_type: &str,
+        previous_keywords: Option<&HashSet<String>>,
+        all_sentences: &[String]
+    ) -> f64 {
         let words: Vec<&str> = sentence.split_whitespace().collect();
         let mut score = 0.0;
+        let sentence_lower = sentence.to_lowercase();
 
-        // Basic scoring: longer sentences get higher scores
-        score += words.len() as f64 * 0.1;
+        // Length score (optimal length 10-25 words)
+        let word_count = words.len();
+        if word_count >= 10 && word_count <= 25 {
+            score += 3.0;
+        } else if word_count >= 5 && word_count < 10 {
+            score += 1.5;
+        } else if word_count > 25 {
+            score += 1.0; // Very long sentences get lower score
+        }
 
-        // Bonus for sentences with numbers or specific keywords
+        // Discourse markers (transition words indicating structure) - CRITICAL for coherence
+        let discourse_markers = [
+            // English transitions
+            "however", "therefore", "consequently", "furthermore", "moreover",
+            "additionally", "in conclusion", "to summarize", "as a result",
+            "on the other hand", "in contrast", "similarly", "meanwhile",
+            "for example", "for instance", "in particular", "specifically",
+            "first", "second", "third", "finally", "lastly",
+            // Indonesian transitions
+            "namun", "oleh karena itu", "sebagai kesimpulan", "kesimpulannya",
+            "selain itu", "tambahan", "akibatnya", "hasilnya",
+            "sebaliknya", "contohnya", "misalnya", "khususnya",
+            "pertama", "kedua", "ketiga", "terakhir", "akhirnya",
+        ];
+        
+        for marker in &discourse_markers {
+            if sentence_lower.contains(marker) {
+                score += 3.5; // Increased from 2.5 - discourse markers are critical
+                break; // Only count once
+            }
+        }
+
+        // Context awareness: Check for keyword overlap with previous sentences
+        if let Some(prev_keywords) = previous_keywords {
+            let current_words: HashSet<String> = words
+                .iter()
+                .map(|w| w.to_lowercase().trim_matches(|c: char| !c.is_alphabetic()).to_string())
+                .filter(|w| w.len() > 3)
+                .collect();
+            
+            let overlap_count = current_words.intersection(prev_keywords).count();
+            if overlap_count > 0 {
+                // Bonus for maintaining topical continuity
+                score += (overlap_count as f64) * 0.8;
+            }
+        }
+
+        // Question detection (questions often contain important information)
+        let question_indicators = [
+            "apa", "bagaimana", "mengapa", "kapan", "dimana", "siapa",
+            "what", "how", "why", "when", "where", "who", "which",
+        ];
+        let is_question = sentence.ends_with('?') || 
+            question_indicators.iter().any(|q| sentence_lower.contains(q));
+        
+        if is_question {
+            score += 2.0; // Questions are often key to understanding
+        }
+
+        // TF-IDF-like weighting: Calculate term rarity across all sentences
+        if !all_sentences.is_empty() && all_sentences.len() > 3 {
+            let current_words: HashSet<String> = words
+                .iter()
+                .map(|w| w.to_lowercase().trim_matches(|c: char| !c.is_alphabetic()).to_string())
+                .filter(|w| w.len() > 3)
+                .collect();
+            
+            // Calculate IDF (Inverse Document Frequency) for words in current sentence
+            let mut idf_score = 0.0;
+            for word in &current_words {
+                let doc_freq = all_sentences.iter()
+                    .filter(|s| s.to_lowercase().contains(word))
+                    .count();
+                
+                if doc_freq > 0 && doc_freq < all_sentences.len() {
+                    // Words that appear in some but not all sentences are more valuable
+                    let idf = ((all_sentences.len() as f64) / (doc_freq as f64)).ln();
+                    idf_score += idf;
+                }
+            }
+            
+            // Normalize and add to score (reduced weight from 2.0 to 1.0)
+            if !current_words.is_empty() {
+                score += (idf_score / current_words.len() as f64) * 1.0;
+            }
+        }
+
+        // Keyword importance
+        let importance_keywords = [
+            "penting", "utama", "pertama", "akhir", "kesimpulan",
+            "important", "crucial", "significant", "key", "main", "primary",
+            "conclusion", "summary", "result", "finding", "tujuan", "goal",
+            "masalah", "problem", "solusi", "solution", "definisi", "definition",
+            "penjelasan", "explanation", "alasan", "reason", "tujuan", "purpose",
+        ];
+        for keyword in &importance_keywords {
+            if sentence_lower.contains(keyword) {
+                score += 2.0;
+            }
+        }
+
+        // Content-type specific scoring (increased bonuses)
+        match content_type {
+            "technical" => {
+                let tech_keywords = [
+                    "sistem", "arsitektur", "komponen", "protokol", "standar",
+                    "system", "architecture", "component", "protocol", "standard",
+                    "api", "database", "server", "klien", "client", "implementasi",
+                    "implementation", "framework", "library", "interface", "module",
+                ];
+                let mut tech_count = 0;
+                for keyword in &tech_keywords {
+                    if sentence_lower.contains(keyword) {
+                        tech_count += 1;
+                    }
+                }
+                score += (tech_count as f64) * 2.0; // Increased from 1.5 to 2.0
+            }
+            "meeting" => {
+                let meeting_keywords = [
+                    "keputusan", "action", "tindakan", "deadline", "tanggal",
+                    "decision", "agenda", "diskusi", "discussion", "rapat", "meeting",
+                ];
+                let mut meeting_count = 0;
+                for keyword in &meeting_keywords {
+                    if sentence_lower.contains(keyword) {
+                        meeting_count += 1;
+                    }
+                }
+                score += (meeting_count as f64) * 2.0;
+            }
+            "research" => {
+                let research_keywords = [
+                    "hasil", "temuan", "data", "analisis", "metode",
+                    "result", "finding", "data", "analysis", "method",
+                    "penelitian", "research", "study", "hypothesis", "experiment",
+                ];
+                let mut research_count = 0;
+                for keyword in &research_keywords {
+                    if sentence_lower.contains(keyword) {
+                        research_count += 1;
+                    }
+                }
+                score += (research_count as f64) * 2.0;
+            }
+            _ => {}
+        }
+
+        // Numbers and data (indicate factual information)
         if sentence.chars().any(|c| c.is_numeric()) {
             score += 1.0;
         }
 
-        // Bonus for sentences with important indicators
-        let importance_indicators = ["important", "crucial", "significant", "key", "major"];
-        for indicator in &importance_indicators {
-            if sentence.to_lowercase().contains(indicator) {
-                score += 0.5;
-            }
+        // Named entities (capitalized words, excluding sentence start)
+        let capitalized_count = words
+            .iter()
+            .skip(1) // Skip first word (sentence start)
+            .filter(|w| w.chars().next().unwrap_or('a').is_uppercase())
+            .count();
+        
+        // Higher bonus for named entities - they indicate specific, important information
+        if capitalized_count > 0 {
+            score += (capitalized_count as f64) * 1.2;
+        }
+
+        // Acronyms and abbreviations (often important technical terms)
+        let acronym_count = words
+            .iter()
+            .filter(|w| w.len() >= 2 && w.chars().all(|c| c.is_uppercase() || !c.is_alphabetic()))
+            .count();
+        
+        if acronym_count > 0 {
+            score += (acronym_count as f64) * 1.5;
+        }
+
+        // Avoid very short sentences
+        if word_count < 5 {
+            score *= 0.3;
         }
 
         score
     }
 
-    /// Select top sentences for summary
+    /// Select top sentences while maintaining original order for coherence
     pub fn select_top_sentences(
         &self,
         scored_sentences: Vec<(String, f64)>,
         target_count: usize,
     ) -> Vec<String> {
-        let mut sorted_sentences = scored_sentences;
-        sorted_sentences.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        // Create a vector with indices to track original positions
+        let mut indexed_sentences: Vec<(usize, String, f64)> = scored_sentences
+            .into_iter()
+            .enumerate()
+            .map(|(idx, (sent, score))| (idx, sent, score))
+            .collect();
 
-        sorted_sentences
+        // Sort by score (descending) to select top sentences
+        indexed_sentences.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
+
+        // Take top N sentences
+        let mut selected: Vec<(usize, String)> = indexed_sentences
             .into_iter()
             .take(target_count)
-            .map(|(sentence, _)| sentence)
-            .collect()
+            .map(|(idx, sent, _)| (idx, sent))
+            .collect();
+
+        // Sort by original index to maintain document order
+        selected.sort_by_key(|(idx, _)| *idx);
+
+        // Return just the sentences
+        selected.into_iter().map(|(_, sent)| sent).collect()
     }
 
     /// Generate summary text from selected sentences
@@ -351,7 +541,21 @@ impl TextAnalyzer {
         if sentences.is_empty() {
             return "No content available for summarization.".to_string();
         }
-        sentences.join(". ") + "."
+        
+        // Join sentences with proper punctuation
+        let mut result = String::new();
+        for (i, sentence) in sentences.iter().enumerate() {
+            if i > 0 {
+                result.push(' ');
+            }
+            result.push_str(sentence);
+            // Add period if sentence doesn't end with punctuation
+            if !sentence.ends_with('.') && !sentence.ends_with('!') && !sentence.ends_with('?') {
+                result.push('.');
+            }
+        }
+        
+        result
     }
 }
 

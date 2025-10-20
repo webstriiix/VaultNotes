@@ -210,9 +210,12 @@ type Nft = record {
 
 service : {
   register_user : (text, text) -> ();
+  update_profile : (text, text) -> ();
   get_profile : (principal) -> (opt UserProfile) query;
   get_registered_users : () -> (vec UserProfile) query;
   get_other_users : (principal) -> (vec UserProfile) query;
+  is_username_available : (text) -> (bool) query;
+  is_username_available_for_user : (text, principal) -> (bool) query;
   whoami: () -> (principal) query;
   create_note : (text) -> (nat);
   get_note : (nat) -> (opt Note) query;

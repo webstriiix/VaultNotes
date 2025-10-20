@@ -15,7 +15,9 @@ const Profile = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
   const [isExistingProfile, setIsExistingProfile] = useState(false); // ✅ cek profile sudah ada atau belum
+  const [checkingUsername, setCheckingUsername] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,6 +60,42 @@ const Profile = () => {
     }
   };
 
+  const checkUsernameAvailability = async (value) => {
+    if (!value?.trim() || !identity) {
+      setUsernameError("");
+      return true;
+    }
+
+    try {
+      setCheckingUsername(true);
+      Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
+      
+      let isAvailable;
+      if (isExistingProfile) {
+        // For existing profiles, check if username is available for this user
+        const principal = identity.getPrincipal();
+        isAvailable = await encrypted_notes_backend.is_username_available_for_user(value.trim(), principal);
+      } else {
+        // For new profiles, check if username is available
+        isAvailable = await encrypted_notes_backend.is_username_available(value.trim());
+      }
+
+      if (!isAvailable) {
+        setUsernameError("Username is already taken");
+        return false;
+      } else {
+        setUsernameError("");
+        return true;
+      }
+    } catch (error) {
+      console.error("Failed to check username:", error);
+      setUsernameError("Failed to verify username");
+      return false;
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!identity) return;
 
@@ -76,17 +114,34 @@ const Profile = () => {
       return;
     }
 
+    // Check username availability before saving
+    const isUsernameValid = await checkUsernameAvailability(username);
+    if (!isUsernameValid) {
+      toast.error("Username is already taken. Please choose a different one.");
+      return;
+    }
+
     setLoading(true);
     try {
       Actor.agentOf(encrypted_notes_backend).replaceIdentity(identity);
 
-      await encrypted_notes_backend.register_user(username, email);
+      if (isExistingProfile) {
+        await encrypted_notes_backend.update_profile(username.trim(), email);
+      } else {
+        await encrypted_notes_backend.register_user(username.trim(), email);
+      }
 
       toast.success(isExistingProfile ? "Profile updated!" : "Profile saved!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Failed to save profile:", error);
-      toast.error("Failed to save profile. Please try again.");
+      // Extract error message if it's from backend
+      const errorMessage = error.toString();
+      if (errorMessage.includes("already taken")) {
+        toast.error("Username is already taken. Please choose a different one.");
+      } else {
+        toast.error("Failed to save profile. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -163,6 +218,7 @@ const Profile = () => {
                     placeholder="Enter your username..."
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    onBlur={(e) => checkUsernameAvailability(e.target.value)}
                     size="lg"
                     variant="bordered"
                     classNames={{
@@ -170,6 +226,9 @@ const Profile = () => {
                       inputWrapper:
                         "border-[#3C444D] shadow-sm rounded-xl h-12 sm:h-14",
                     }}
+                    isInvalid={!!usernameError}
+                    errorMessage={usernameError}
+                    description={checkingUsername ? "Checking availability..." : ""}
                   />
                 </div>
 
