@@ -19,7 +19,7 @@ Run this once (re-run whenever you want to pick up a newer release):
 It stores `icrc1_ledger.did` and `icrc1_ledger.wasm.gz` in the repository root.
 The files are git-ignored.
 
-## 2. Deploy the local ledger
+## 2. Deploy the local ledger and link it to the backend
 
 ```bash
 ./scripts/deploy_local_icrc1_ledger.sh
@@ -31,19 +31,19 @@ The script:
 2. Uses the current `dfx identity` as both the minting account and the archive
    controller
 3. Mints 10 ckBTC (1_000_000_000 sats) to that same identity
+4. Calls the backend’s `set_ledger_id` so future ckBTC calls use this canister
 
 If you switch identities, simply run the script again to rebuild the ledger with
 fresh state.
 
-## 3. Point the backend at the ledger canister
+## 3. Manually re-link the backend (optional)
 
 ```bash
 ./scripts/set_local_ckbtc_ledger.sh
 ```
 
-This calls the backend’s `set_ledger_id` update method (controllers only) and
-stores the `ckbtc_ledger` principal in stable memory. Future ledger calls (balance
-checks, `icrc2_transfer_from`, etc.) will use this canister.
+The deployment script already runs this command. Only re-run it if you reinstall
+the backend canister manually or want to switch to a different ledger principal.
 
 ## 4. Optional ledger operations
 
@@ -70,6 +70,14 @@ dfx canister call ckbtc_ledger icrc1_transfer '(
 The backend’s NFT marketplace (`buy_nft`) uses `icrc2_transfer_from`. The local
 ledger that the script deploys enables the ICRC‑2 feature flag, so no further
 changes are necessary.
+
+### Granting spending allowance from the UI
+
+The ledger only respects approvals signed by the Internet Identity that owns
+the ckBTC. Before purchasing an NFT, open the Marketplace page and click
+**“Approve ckBTC Spending”** – the app calls `icrc2_approve` on your behalf
+and shows the active allowance. Once the allowance covers the listing price
+you can press **Buy Now**, and the allowance will decrease automatically.
 
 ## Clean-up
 
