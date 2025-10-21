@@ -562,64 +562,93 @@ const Marketplace = () => {
       {/* Purchase Confirmation Modal */}
       <Modal
         isOpen={!!pendingPurchase}
+        hideCloseButton
         onOpenChange={(open) => {
           if (!open) closePurchaseModal();
         }}
         isDismissable={!(isBuying || isApproving || isConfirmingPurchase)}
+        backdrop="blur"
+        size="md"
+        className="bg-gradient-to-br from-[#0A0D12]/98 to-[#0F1419]/98 backdrop-blur-xl"
+        classNames={{
+          backdrop: "bg-black/80",
+        }}
       >
-        <ModalContent className="bg-[#12151C] border border-[#3C444D] text-white">
+        <ModalContent className="relative border border-white/10 shadow-2xl rounded-2xl overflow-hidden">
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1 text-white">
-                Confirm Purchase
-              </ModalHeader>
-              <ModalBody className="text-sm text-gray-200 space-y-2">
-                <p className="font-medium text-lg text-white">
-                  {pendingPurchase?.title || "Selected NFT"}
+              <ModalHeader className="flex flex-col gap-1 border-b border-white/10 pb-4 px-6">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  Confirm Purchase
+                </h2>
+                <p className="text-sm text-default-400 font-normal">
+                  Review your purchase details below.
                 </p>
-                <div className="flex justify-between">
-                  <span>Admin fee ({ADMIN_FEE_PERCENT}%)</span>
-                  <span>
-                    {pendingPurchase
-                      ? `${formatCkbtc(pendingPurchase.adminFeeSats)} ckBTC`
+              </ModalHeader>
+
+              <ModalBody className="px-6 py-6 space-y-6">
+                <div className="p-5 bg-white/5 rounded-xl border border-white/10 shadow-md">
+                  <p className="font-semibold text-lg mb-3 text-white">
+                    {pendingPurchase?.title || "Selected NFT"}
+                  </p>
+                  <div className="space-y-2 text-sm text-neutral-300">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">
+                        Admin Fee ({ADMIN_FEE_PERCENT}%)
+                      </span>
+                      <span>
+                        {pendingPurchase
+                          ? `${formatCkbtc(pendingPurchase.adminFeeSats)} ckBTC`
+                          : "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">Seller Receives</span>
+                      <span className="text-success-400 font-medium">
+                        {pendingPurchase
+                          ? `${formatCkbtc(
+                              pendingPurchase.sellerReceivesSats
+                            )} ckBTC`
+                          : "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 border-t border-white/10 pt-4 flex justify-between font-bold text-lg text-white">
+                    <span>Total Charged</span>
+                    <span className="text-purple-400">
+                      {" "}
+                      {pendingPurchase
+                        ? `${formatCkbtc(pendingPurchase.priceSats)} ckBTC`
+                        : "-"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white/5 rounded-xl border border-white/10 shadow-md text-xs font-mono truncate">
+                  <span className="text-neutral-400">Seller Principal: </span>
+                  <span className="text-neutral-300">
+                    {pendingPurchase?.sellerPrincipal
+                      ? `${pendingPurchase.sellerPrincipal.slice(0, 20)}...`
                       : "-"}
                   </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Seller receives</span>
-                  <span>
-                    {pendingPurchase
-                      ? `${formatCkbtc(
-                          pendingPurchase.sellerReceivesSats
-                        )} ckBTC`
-                      : "-"}
-                  </span>
-                </div>
-                <div className="flex justify-between text-white font-semibold pt-2 border-t border-[#3C444D]">
-                  <span>Total charged</span>
-                  <span>
-                    {pendingPurchase
-                      ? `${formatCkbtc(pendingPurchase.priceSats)} ckBTC`
-                      : "-"}
-                  </span>
-                </div>
-                <div className="text-xs text-default-500 pt-2">
-                  Seller Principal:{" "}
-                  {pendingPurchase?.sellerPrincipal
-                    ? `${pendingPurchase.sellerPrincipal.slice(0, 12)}...`
-                    : "-"}
                 </div>
               </ModalBody>
-              <ModalFooter>
+
+              <ModalFooter className="border-t border-white/10 pt-4 px-6 flex justify-end gap-4">
                 <Button
-                  variant="light"
+                  variant="bordered"
                   onPress={onClose}
+                  className="rounded-xl text-neutral-200 border-white/10 
+                   hover:bg-white/10 transition-colors"
                   isDisabled={isBuying || isApproving || isConfirmingPurchase}
                 >
                   Cancel
                 </Button>
+
                 <Button
                   color="primary"
+                  className="rounded-xl shadow-md font-semibold bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
                   onPress={confirmPurchase}
                   isLoading={isBuying || isApproving || isConfirmingPurchase}
                   isDisabled={isBuying || isApproving || isConfirmingPurchase}
